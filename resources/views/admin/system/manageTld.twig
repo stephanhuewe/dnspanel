@@ -1,0 +1,544 @@
+{% extends "layouts/app.twig" %}
+
+{% block title %}{{ __('Manage TLD') }} {{ tld.tld }}{% endblock %}
+
+{% block content %}
+      <div class="page-wrapper">
+        <!-- Page header -->
+        <div class="page-header d-print-none">
+          <div class="container-xl">
+            <div class="row g-2 align-items-center">
+              <div class="col">
+                <!-- Page pre-title -->
+                <div class="page-pretitle">
+                  {{ __('Overview') }}
+                </div>
+                <h2 class="page-title">
+                  {{ __('Manage TLD') }} {{ tld_u }}
+                </h2>
+              </div>
+              <!-- Page title actions -->
+              <div class="col-auto ms-auto d-print-none">
+                <div class="btn-list">
+                  <a href="/registry/idnexport/{{ tld.tld }}" class="btn btn-info d-none d-sm-inline-block">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M11.5 21h-4.5a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v5m-5 6h7m-3 -3l3 3l-3 3" /></svg>
+                    {{ __('Export IDN Table') }}
+                  </a>
+                  <a href="/registry/idnexport/{{ tld.tld }}" class="btn btn-info d-sm-none btn-icon" aria-label="{{ __('Export IDN Table') }}" title="{{ __('Export IDN Table') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M11.5 21h-4.5a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v5m-5 6h7m-3 -3l3 3l-3 3" /></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Page body -->
+        <div class="page-body">
+          <div class="container-xl">
+            <div class="col-12">
+            {% include 'partials/flash.twig' %}
+              <form action="/registry/tld/{{ tld.tld }}" method="post" autocomplete="off">
+              {{ csrf.field | raw }}
+                <div class="card mb-3">
+                  <div class="card-header">
+                    <h5 class="card-title">{{ __('General Details') }}</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="datagrid">
+                      <div class="datagrid-item">
+                        <div class="datagrid-title">{{ __('TLD Extension') }}</div>
+                        <div class="datagrid-content">{{ tld_u }}</div>
+                      </div>
+                      <div class="datagrid-item">
+                        <div class="datagrid-title">{{ __('TLD Type') }}</div>
+                        <div class="datagrid-content">{{ tld_u|length == 3 ? 'ccTLD' : (tld_u|length > 3 ? 'gTLD' : (tld_u|length == 2 ? 'Test TLD' : '')) }}</div>
+                      </div>
+                      <div class="datagrid-item">
+                        <div class="datagrid-title">{{ __('Supported Script') }}</div>
+                        <div class="datagrid-content">{{ scriptName }}</div>
+                      </div>
+                      <div class="datagrid-item">
+                        <div class="datagrid-title">DNSSEC</div>
+                        <div class="datagrid-content">
+                          {% if secureTld == 1 %}
+                            <span class="status status-blue">
+                              {{ __('Active') }}
+                            </span>
+                          {% else %}
+                            <span class="status status-yellow">
+                              {{ __('Manual') }}
+                            </span>
+                          {% endif %}
+                        </div>
+                      </div>
+                      <div class="datagrid-item">
+                        <div class="datagrid-title">Enable DNSSEC</div>
+                        <div class="datagrid-content">
+                          <label class="form-check">
+                            <input class="form-check-input" type="checkbox" name="dnssec_enable" {% if secureTld == 1 %} checked disabled {% endif %}>
+                            <span class="form-check-label">{{ __('Enable') }}</span>
+                          </label>
+                        </div>
+                      </div>
+                      <div class="datagrid-item">
+                        <div class="datagrid-title">DNSSEC Mode</div>
+                        <div class="datagrid-content">
+                          <label class="form-check">
+                            <input class="form-check-input" type="checkbox" name="bind9_enable" {% if secureTld == 1 %} checked disabled {% endif %}>
+                            <span class="form-check-label">{{ __('BIND9') }}</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {% if dnssecData is defined and dnssecData.keys is defined %}
+                <div class="card mb-3">
+                  <div class="card-header">
+                    <h5 class="card-title">{{ __('DNSSEC Details') }} <span class="card-subtitle">{{ __('Last Updated:') }} {{ dnssecData.timestamp }}</span></h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="table-responsive">
+                      <table class="table table-vcenter card-table">
+                        <thead>
+                          <tr>
+                            <th>{{ __('Key File') }}</th>
+                            <th>{{ __('DS Record') }}</th>
+                            <th>{{ __('Timestamp') }}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for key in dnssecData.keys %}
+                          <tr>
+                            <td>{{ key.keyFile }}</td>
+                            <td><p class="user-select-all tracking-wide mb-0"><kbd>{{ key.dsRecord }}</kbd></p></td>
+                            <td>{{ key.timestamp }}</td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                {% elseif dnssecData.error is defined %}
+                <div class="card mb-3">
+                  <div class="card-header">
+                    <h5 class="card-title">{{ __('DNSSEC Details') }}</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                      <h4 class="alert-title">{{ dnssecData.error }}</h4>
+                    </div>
+                  </div>
+                </div>
+                {% else %}
+                <div class="card mb-3">
+                  <div class="card-header">
+                    <h5 class="card-title">{{ __('DNSSEC Details') }}</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="alert alert-info" role="alert">
+                      <h4 class="alert-title">{{ __('No DNSSEC data available.') }}</h4>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+
+                <div class="card mb-3">
+                  <div class="card-header">
+                    <h5 class="card-title">{{ __('Pricing') }}</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                      <thead>
+                        <tr>
+                          <th>{{ __('Command') }}</th>
+                          <th>{{ __('Setup Fee') }}</th>
+                          <th>1 {{ __('Year') }} <span class="text-red">*</span></th>
+                          <th>2 {{ __('Years') }} <span class="text-red">*</span></th>
+                          <th>3 {{ __('Years') }} <span class="text-red">*</span></th>
+                          <th>4 {{ __('Years') }} <span class="text-red">*</span></th>
+                          <th>5 {{ __('Years') }} <span class="text-red">*</span></th>
+                          <th>6 {{ __('Years') }} <span class="text-red">*</span></th>
+                          <th>7 {{ __('Years') }} <span class="text-red">*</span></th>
+                          <th>8 {{ __('Years') }} <span class="text-red">*</span></th>
+                          <th>9 {{ __('Years') }} <span class="text-red">*</span></th>
+                          <th>10 {{ __('Years') }} <span class="text-red">*</span></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{{ __('Create') }}</td>
+                          <td><input type="number" class="form-control" name="createm0" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ createPrices.m0 }}"></td>
+                          <td><input type="number" class="form-control" name="createm12" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ createPrices.m12 }}"></td>
+                          <td><input type="number" class="form-control" name="createm24" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ createPrices.m24 }}"></td>
+                          <td><input type="number" class="form-control" name="createm36" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ createPrices.m36 }}"></td>
+                          <td><input type="number" class="form-control" name="createm48" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ createPrices.m48 }}"></td>
+                          <td><input type="number" class="form-control" name="createm60" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ createPrices.m60 }}"></td>
+                          <td><input type="number" class="form-control" name="createm72" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ createPrices.m72 }}"></td>
+                          <td><input type="number" class="form-control" name="createm84" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ createPrices.m84 }}"></td>
+                          <td><input type="number" class="form-control" name="createm96" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ createPrices.m96 }}"></td>
+                          <td><input type="number" class="form-control" name="createm108" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ createPrices.m108 }}"></td>
+                          <td><input type="number" class="form-control" name="createm120" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ createPrices.m120 }}"></td>
+                        </tr>
+                        <tr>
+                          <td>{{ __('Renew') }}</td>
+                          <td><input type="number" class="form-control" name="renewm0" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ renewPrices.m0 }}"></td>
+                          <td><input type="number" class="form-control" name="renewm12" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ renewPrices.m12 }}"></td>
+                          <td><input type="number" class="form-control" name="renewm24" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ renewPrices.m24 }}"></td>
+                          <td><input type="number" class="form-control" name="renewm36" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ renewPrices.m36 }}"></td>
+                          <td><input type="number" class="form-control" name="renewm48" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ renewPrices.m48 }}"></td>
+                          <td><input type="number" class="form-control" name="renewm60" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ renewPrices.m60 }}"></td>
+                          <td><input type="number" class="form-control" name="renewm72" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ renewPrices.m72 }}"></td>
+                          <td><input type="number" class="form-control" name="renewm84" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ renewPrices.m84 }}"></td>
+                          <td><input type="number" class="form-control" name="renewm96" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ renewPrices.m96 }}"></td>
+                          <td><input type="number" class="form-control" name="renewm108" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ renewPrices.m108 }}"></td>
+                          <td><input type="number" class="form-control" name="renewm120" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ renewPrices.m120 }}"></td>
+                        </tr>
+                        <tr>
+                          <td>{{ __('Transfer') }}</td>
+                          <td><input type="number" class="form-control" name="transferm0" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ transferPrices.m0 }}"></td>
+                          <td><input type="number" class="form-control" name="transferm12" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ transferPrices.m12 }}"></td>
+                          <td><input type="number" class="form-control" name="transferm24" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ transferPrices.m24 }}"></td>
+                          <td><input type="number" class="form-control" name="transferm36" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ transferPrices.m36 }}"></td>
+                          <td><input type="number" class="form-control" name="transferm48" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ transferPrices.m48 }}"></td>
+                          <td><input type="number" class="form-control" name="transferm60" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ transferPrices.m60 }}"></td>
+                          <td><input type="number" class="form-control" name="transferm72" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ transferPrices.m72 }}"></td>
+                          <td><input type="number" class="form-control" name="transferm84" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ transferPrices.m84 }}"></td>
+                          <td><input type="number" class="form-control" name="transferm96" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ transferPrices.m96 }}"></td>
+                          <td><input type="number" class="form-control" name="transferm108" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ transferPrices.m108 }}"></td>
+                          <td><input type="number" class="form-control" name="transferm120" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ transferPrices.m120 }}"></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <small class="form-text text-muted">{{ __('When you type a price for 1 Year above, it will automatically get multiplied for subsequent years.') }}</small>
+                    </div>
+                    <div class="mb-3 mt-3">
+                      <label for="restorePrice" class="form-label required">{{ __('Restore Price') }}</label>
+                      <input type="number" class="form-control" id="restorePrice" name="restorePrice" placeholder="0.00" required min="0" step="0.01" pattern="^\d+(\.\d{1,2})?$" value="{{ tld_restore.price }}">
+                      <small class="form-text text-muted">{{ __('Enter the price for restoring the TLD.') }}</small>
+                    </div>
+                  </div>
+                </div>
+                    
+                <div class="card mb-3">
+                  <div class="card-header">
+                    <h5 class="card-title">{{ __('Premium Names') }}</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <label for="premiumNamesFile" class="form-label">{{ __('Upload CSV File') }}</label>
+                      <input type="file" class="form-control" id="premiumNamesFile" name="premiumNamesFile" accept=".csv">
+                      <small class="form-text text-muted">
+                        {{ __('Please upload a CSV file containing premium names. Each row should include a name and its corresponding pricing category, separated by a comma. Note: If one or more names in the file already exist in our system, they will be overwritten with the new information provided in the upload.') }}
+                      </small>
+                    </div>
+                            
+                    <hr>
+
+                    <h5 class="card-title mb-3">{{ __('Set Premium Name Price Categories') }}</h5>
+                    <table class="table" id="categoriesTable">
+                      <thead>
+                        <tr>
+                          <th>{{ __('Category Name') }}</th>
+                          <th>{{ __('Price') }}</th>
+                          <th>{{ __('Action') }}</th>
+                        </tr>
+                      </thead>
+                     <tbody>
+                         {% for category in premium_categories %}
+                         <tr>
+                             <td>
+                                 <input type="text" class="form-control" name="categoryName{{ category.category_id }}" placeholder="Category Name" value="{{ category.category_name }}" readonly>
+                             </td>
+                             <td>
+                                 <input type="number" class="form-control" name="categoryPrice{{ category.category_id }}" placeholder="0.00" min="0" value="{{ category.category_price }}">
+                             </td>
+                             <td>
+                                 <button type="button" class="btn btn-danger" disabled>-</button>
+                             </td>
+                         </tr>
+                         {% endfor %}
+                         <tr>
+                             <td><input type="text" class="form-control" name="categoryNameNew1" placeholder="New Category 1"></td>
+                             <td><input type="number" class="form-control" name="categoryPriceNew1" placeholder="0.00" min="0"></td>
+                             <td><button type="button" class="btn btn-success add-category">+</button></td>
+                         </tr>
+                     </tbody>
+                    </table>
+                      <small class="form-text text-muted">
+                        {{ __('Update existing premium categories as needed. Please note: currently, deletion of categories is not available. All updates will modify existing information without removing any categories.') }}
+                      </small>
+                  </div>
+                  <div class="card-footer">
+                    <div class="row align-items-center">
+                      <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">{{ __('Update TLD') }} {{ tld_u }}</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+
+              <div class="card mb-3">
+                  <div class="card-header">
+                      <h5 class="card-title">{{ __('Manage Promotions') }}</h5>
+                  </div>
+                  <div class="card-body">
+                  <div class="table-responsive mb-3">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{{ __('Promotion Name') }}</th>
+                                <th>{{ __('Start Date') }}</th>
+                                <th>{{ __('End Date') }}</th>
+                                <th>{{ __('Discount') }} (%)</th>
+                                <th>{{ __('Discount Amount') }}</th>
+                                <th>{{ __('Description') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for promo in promotions %}
+                                <tr>
+                                    <td>{{ promo.promo_name }}</td>
+                                    <td>{{ promo.start_date }}</td>
+                                    <td>{{ promo.end_date }}</td>
+                                    <td>{{ promo.discount_percentage ? promo.discount_percentage ~ '%' : 'N/A' }}</td>
+                                    <td>{{ promo.discount_amount ? promo.discount_amount : 'N/A' }}</td>
+                                    <td>{{ promo.description ? promo.description : 'N/A' }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="8">{{ __('No promotions found.') }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                  </div>
+                      <h5 class="card-title mb-3">{{ __('Create New Promotion') }}</h5>
+                      <form action="/registry/promotions" method="post">
+                      {{ csrf.field | raw }}
+                          <div class="mb-3">
+                              <label for="promotionName" class="form-label required">{{ __('Promotion Name') }}</label>
+                              <input type="text" class="form-control" id="promotionName" name="promotionName" placeholder="Enter promotion name" required>
+                          </div>
+                          <div class="row">
+                              <div class="col-sm-6 col-md-6">
+                                <div class="mb-3">
+                                  <label for="promotionStart" class="form-label required">{{ __('Promotion Start Date') }}</label>
+                                  <input type="datetime-local" class="form-control" placeholder="e.g., 01/01/2023" id="promotionStart" name="promotionStart" required>
+                                  <small class="form-text text-muted"><strong>{{ __('Please Note:') }}</strong> {{ __('All times displayed are in') }} <strong>Coordinated Universal Time (UTC)</strong></small>
+                                </div>
+                              </div>
+                              <div class="col-sm-6 col-md-6">
+                                <div class="mb-3">
+                                  <label for="promotionEnd" class="form-label required">{{ __('Promotion End Date') }}</label>
+                                  <input type="datetime-local" class="form-control" placeholder="e.g., 01/01/2023" id="promotionEnd" name="promotionEnd" required>
+                                </div>
+                              </div>
+                          </div>
+                          <div class="mb-3">
+                              <label for="discountType" class="form-label required">{{ __('Discount Type') }}</label>
+                              <select class="form-select" id="discountType" name="discountType" required>
+                                  <option value="percentage">{{ __('Percentage') }}</option>
+                                  <option value="fixed">{{ __('Fixed Amount') }}</option>
+                                  <option value="free">{{ __('Free Domains') }}</option>
+                              </select>
+                          </div>
+                          <div class="mb-3">
+                              <label for="discountValue" class="form-label">{{ __('Discount Value') }}</label>
+                              <input type="text" class="form-control" id="discountValue" name="discountValue" placeholder="{{ __('Enter discount value') }}">
+                          </div>
+                          <div class="mb-3">
+                              <label for="max_count" class="form-label">{{ __('Maximum Discounted Items') }}</label>
+                              <input type="text" class="form-control" id="max_count" name="max_count">
+                          </div>
+                          <div class="mb-3">
+                              <label for="promotionConditions" class="form-label">{{ __('Conditions') }}</label>
+                              <textarea class="form-control" id="promotionConditions" name="promotionConditions" rows="3" placeholder="{{ __('Enter conditions') }}"></textarea>
+                          </div>
+                          <div class="mb-3">
+                              <label for="promotionDescription" class="form-label">{{ __('Description') }}</label>
+                              <textarea class="form-control" id="promotionDescription" name="promotionDescription" rows="3" placeholder="{{ __('Enter description') }}"></textarea>
+                          </div>
+                  </div>
+                  <div class="card-footer">
+                    <div class="row align-items-center">
+                      <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">{{ __('Update Promotions') }}</button>
+                      </div>
+                    </div>
+                    </form>
+                  </div>
+              </div>
+              
+              <div class="card">
+                  <div class="card-header">
+                      <h5 class="card-title">{{ __('Manage Launch Phases') }}</h5>
+                  </div>
+                  <div class="card-body">
+                  <div class="table-responsive mb-3">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{{ __('Phase Type') }}</th>
+                                <th>{{ __('Phase Name') }}</th>
+                                <th>{{ __('Phase Category') }}</th>
+                                <th>{{ __('Phase Description') }}</th>
+                                <th>{{ __('Start Date') }}</th>
+                                <th>{{ __('End Date') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for phase in launch_phases %}
+                                <tr>
+                                    <td>{{ phase.phase_type|capitalize }}</td>
+                                    <td>{{ phase.phase_name|default('N/A') }}</td>
+                                    <td>{{ phase.phase_category }}</td>
+                                    <td>{{ phase.phase_description }}</td>
+                                    <td>{{ phase.start_date }}</td>
+                                    <td>{{ phase.end_date|default('N/A') }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="7">{{ __('No launch phases found.') }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                  </div>
+                      <h5 class="card-title mb-3">{{ __('Create New Phase') }}</h5>
+                      <form action="/registry/phases" method="post">
+                      {{ csrf.field | raw }}
+                          <div class="mb-3">
+                              <label for="phaseType" class="form-label required">{{ __('Phase Type') }}</label>
+                              <select class="form-select" id="phaseType" name="phaseType" required>
+                                  <option value="sunrise">Sunrise</option>
+                                  <option value="landrush">Landrush</option>
+                                  <option value="claims">Claims</option>
+                                  <option value="open">Open</option>
+                                  <option value="custom">Custom</option>
+                              </select>
+                          </div>
+                          <div class="mb-3">
+                              <label for="phaseName" class="form-label">{{ __('Phase Name') }}</label>
+                              <input type="text" class="form-control" id="phaseName" name="phaseName" placeholder="Enter phase name">
+                              <small class="form-hint">The "Phase Name" field is required only if the "Type" is set to "Custom".</small>
+                          </div>
+                          <div class="mb-3">
+                            <div class="form-label">{{ __('Phase Category') }}</div>
+                            <div>
+                              <label class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="phaseCategory" id="First-Come-First-Serve" value="First-Come-First-Serve" checked>
+                                <span class="form-check-label">First-Come-First-Serve</span>
+                                <small class="form-hint">{{ __('Single application only.') }}</small>
+                              </label>
+                              <label class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="phaseCategory" id="Application" value="Application">
+                                <span class="form-check-label">Application</span>
+                                <small class="form-hint">{{ __('Multiple applications allowed.') }}</small>
+                              </label>
+                            </div>
+                          </div>
+                          <div class="mb-3">
+                              <label for="phaseDescription" class="form-label required">{{ __('Phase Description') }}</label>
+                              <textarea class="form-control" id="phaseDescription" name="phaseDescription" rows="3" placeholder="{{ __('Enter phase description') }}" required></textarea>
+                          </div>
+                          <div class="row">
+                              <div class="col-sm-6 col-md-6">
+                                <div class="mb-3">
+                                  <label for="phaseStart" class="form-label required">{{ __('Phase Start Date') }}</label>
+                                  <input type="datetime-local" class="form-control" placeholder="e.g., 01/01/2023" id="phaseStart" name="phaseStart" required>
+                                  <small class="form-text text-muted"><strong>{{ __('Please Note:') }}</strong> {{ __('All times displayed are in') }} <strong>Coordinated Universal Time (UTC)</strong></small>
+                                </div>
+                              </div>
+                              <div class="col-sm-6 col-md-6">
+                                <div class="mb-3">
+                                  <label for="phaseEnd" class="form-label">{{ __('Phase End Date') }}</label>
+                                  <input type="datetime-local" class="form-control" placeholder="e.g., 01/01/2023" id="phaseEnd" name="phaseEnd">
+                                </div>
+                              </div>
+                          </div>
+                  </div>
+                  <div class="card-footer">
+                    <div class="row align-items-center">
+                      <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">{{ __('Update Phases') }}</button>
+                      </div>
+                    </div>
+                    </form>
+                  </div>
+              </div>
+
+            </div>
+          </div>
+        {% include 'partials/footer.twig' %}
+      </div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const createm12Input = document.querySelector('input[name="createm12"]');
+    const renewm12Input = document.querySelector('input[name="renewm12"]');
+    const transferm12Input = document.querySelector('input[name="transferm12"]');
+
+    const updateMultiplication = (input, startColumnIndex, baseInputName) => {
+      const inputValue = parseFloat(input.value);
+      if (!isNaN(inputValue)) {
+        for (let i = startColumnIndex; i <= 10; i++) {
+          const columnName = `${baseInputName}${12 * i}`;
+          const columnInput = document.querySelector(`input[name="${columnName}"]`);
+          if (columnInput) {
+            columnInput.value = (inputValue * i).toFixed(2);
+          }
+        }
+      }
+    };
+
+    createm12Input.addEventListener('input', () => {
+      updateMultiplication(createm12Input, 2, 'createm');
+    });
+
+    renewm12Input.addEventListener('input', () => {
+      updateMultiplication(renewm12Input, 2, 'renewm');
+    });
+
+    transferm12Input.addEventListener('input', () => {
+      updateMultiplication(transferm12Input, 2, 'transferm');
+    });
+
+    const categoriesTable = document.getElementById('categoriesTable');
+    const addCategoryButton = document.querySelector('.add-category');
+    
+    const maxCategories = 5;
+    let categoryCount = 1;
+    
+    addCategoryButton.addEventListener('click', function() {
+      if (categoryCount < maxCategories) {
+        categoryCount++;
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+          <td><input type="text" class="form-control" name="categoryNameNew${categoryCount}" placeholder="New Category ${categoryCount}"></td>
+          <td><input type="number" class="form-control" name="categoryPriceNew${categoryCount}" placeholder="0.00" min="0"></td>
+          <td><button type="button" class="btn btn-danger remove-category">-</button></td>
+        `;
+        categoriesTable.querySelector('tbody').appendChild(newRow);
+      }
+      
+      if (categoryCount >= maxCategories) {
+        addCategoryButton.style.display = 'none'; // Disable adding more categories after reaching the limit
+      }
+    });
+    
+    categoriesTable.addEventListener('click', function(event) {
+      if (event.target.classList.contains('remove-category')) {
+        const row = event.target.closest('tr');
+        row.remove();
+        categoryCount--;
+        addCategoryButton.style.display = 'block'; // Enable adding more categories after removing one
+      }
+    });
+
+  });
+</script>
+{% endblock %}

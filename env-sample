@@ -1,0 +1,38 @@
+APP_NAME='DNS'
+APP_ENV=public
+APP_URL=https://dns.example.com
+APP_DOMAIN=example.com
+APP_ROOT=/var/www/dns
+MINIMUM_DATA=false
+
+LANG=en_US
+UI_LANG=us
+
+DB_DRIVER=mysql
+DB_HOST=localhost
+DB_DATABASE=dns
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+DB_PORT=3306
+
+#mailer settings (Driver = smtp, utopia or msg [for local message broker]; Api Provder = sendgrid or mailgun)
+
+MAIL_DRIVER=none
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=username
+MAIL_PASSWORD=password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS='example@domain.com'
+MAIL_FROM_NAME='Example'
+MAIL_API_KEY='test-api-key'
+MAIL_API_PROVIDER='sendgrid'
+
+PROVIDER=choose         # AnycastDNS, Bind, ClouDNS, Desec, DNSimple, Hetzner, PowerDNS, Vultr
+API_KEY=your-api-key    # General API Key
+
+BIND_IP=127.0.0.1      # IP address of your BIND9 server
+POWERDNS_IP=127.0.0.1  # IP address of your PowerDNS server
+
+AUTH_ID=your-cloudns-auth-id         # ClouDNS authentication ID
+AUTH_PASSWORD=your-cloudns-password  # ClouDNS authentication password

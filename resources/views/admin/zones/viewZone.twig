@@ -1,0 +1,123 @@
+{% extends "layouts/app.twig" %}
+
+{% block title %}{{ __('Zone Details') }}{% endblock %}
+
+{% block content %}
+      <div class="page-wrapper">
+        <!-- Page header -->
+        <div class="page-header d-print-none">
+          <div class="container-xl">
+            <div class="row g-2 align-items-center">
+              <div class="col">
+                <!-- Page pre-title -->
+                <div class="page-pretitle">
+                  {{ __('Overview') }}
+                </div>
+                <h2 class="page-title">
+                  {{ __('Zone Details') }}
+                </h2>
+              </div>
+              <!-- Page title actions -->
+              <div class="col-auto ms-auto d-print-none">
+                <div class="btn-list">
+                  <a href="/zone/renew/{{ domain.domain_name_o }}" class="btn btn-success d-none d-sm-inline-block">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" /><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" /></svg>
+                    {{ __('Renew Zone') }}
+                  </a>
+                  <a href="/zone/renew/{{ domain.domain_name_o }}" class="btn btn-success d-sm-none btn-icon" aria-label="{{ __('Renew Zone') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" /><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" /></svg>
+                  </a>
+                  <a href="/zone/update/{{ domain.domain_name_o }}" class="btn btn-info d-none d-sm-inline-block">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg>
+                    {{ __('Update Zone') }}
+                  </a>
+                  <a href="/zone/update/{{ domain.domain_name_o }}" class="btn btn-info d-sm-none btn-icon" aria-label="{{ __('Update Zone') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Page body -->
+        <div class="page-body">
+          <div class="container-xl">
+            <div class="col-12">
+              <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        {{ __('Zone') }} {{ domain.domain_name }}
+                    </h3>
+                </div>
+                <div class="card-body">
+                  <div class="datagrid">
+                    <div class="datagrid-item">
+                      <div class="datagrid-title">{{ __('Created On') }}</div>
+                      <div class="datagrid-content">{{ domain.created_at }}</div>
+                    </div>
+                    <div class="datagrid-item">
+                      <div class="datagrid-title">{{ __('Last Updated') }}</div>
+                      <div class="datagrid-content">{{ domain.updated_at }}</div>
+                    </div>
+                    <div class="datagrid-item">
+                      <div class="datagrid-title">{{ __('Client') }}</div>
+                      <div class="datagrid-content">{{ users.username }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+              <div class="row mb-3">
+                <div class="col-md-12">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <h5 class="card-title">{{ __('Records') }}</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered text-nowrap table-vcenter">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="w-1">Type</th>
+                                        <th scope="col" class="w-25">Name</th>
+                                        <th scope="col" class="w-40">Value</th>
+                                        <th scope="col" class="w-10">TTL</th>
+                                        <th scope="col" class="w-1">Priority</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in records %}
+                                        <tr>
+                                            <td>
+                                                {% set dns_type = record.type|upper %}
+                                                <span class="badge 
+                                                {% if dns_type == 'A' %}bg-blue-lt
+                                                {% elseif dns_type == 'AAAA' %}bg-indigo-lt
+                                                {% elseif dns_type == 'CNAME' %}bg-green-lt
+                                                {% elseif dns_type == 'MX' %}bg-orange-lt
+                                                {% elseif dns_type == 'TXT' %}bg-teal-lt
+                                                {% elseif dns_type == 'SPF' %}bg-red-lt
+                                                {% elseif dns_type == 'DS' %}bg-purple-lt
+                                                {% else %}bg-default
+                                                {% endif %}">{{ dns_type }}</span>
+                                            </td>
+                                            <td><strong>{{ record.host }}</strong></td>
+                                            <td>{{ record.value }}</td>
+                                            <td>{{ record.ttl }}</td>
+                                            <td>{% if record.type == 'MX' %}{{ record.priority }}{% endif %}</td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="5" class="text-center">No DNS records found.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          </div>
+        </div>
+        {% include 'partials/footer.twig' %}
+      </div>
+{% endblock %}

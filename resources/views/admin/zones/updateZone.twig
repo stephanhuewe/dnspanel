@@ -1,0 +1,199 @@
+{% extends "layouts/app.twig" %}
+
+{% block title %}{{ __('Updating Zone') }} {{ domain.domain_name }}{% endblock %}
+
+{% block content %}
+      <div class="page-wrapper">
+        <!-- Page header -->
+        <div class="page-header d-print-none">
+          <div class="container-xl">
+            <div class="row g-2 align-items-center">
+              <div class="col">
+                <!-- Page pre-title -->
+                <div class="page-pretitle">
+                  {{ __('Overview') }}
+                </div>
+                <h2 class="page-title">
+                  {{ __('Updating Zone') }} {{ domain.domain_name }}
+                </h2>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Page body -->
+        <div class="page-body">
+          <div class="container-xl">
+              <div class="col-12">
+              {% include 'partials/flash.twig' %}
+                <div class="card mb-3">
+                  <div class="card-header">
+                    <h3 class="card-title">
+                        {{ __('Zone') }} {{ domain.domain_name }}
+                    </h3>
+                  </div>
+                  <div class="card-body">
+                    <div class="datagrid">
+                      <div class="datagrid-item">
+                        <div class="datagrid-title">{{ __('Created On') }}</div>
+                        <div class="datagrid-content">{{ domain.created_at }}</div>
+                      </div>
+                      <div class="datagrid-item">
+                        <div class="datagrid-title">{{ __('Last Updated') }}</div>
+                        <div class="datagrid-content">{{ domain.updated_at }}</div>
+                      </div>
+                      <div class="datagrid-item">
+                        <div class="datagrid-title">{{ __('Client') }}</div>
+                        <div class="datagrid-content">{{ users.username }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-body">
+                    <form id="domainUpdateForm" action="/zone/update" method="post">
+                    {{ csrf.field | raw }}
+                        <div class="row g-3">
+                            <div class="col-md-2">
+                                <select class="form-select" name="record_type" required>
+                                    <option value="" disabled selected>Select Type</option>
+                                    <option value="A">A</option>
+                                    <option value="AAAA">AAAA</option>
+                                    <option value="CNAME">CNAME</option>
+                                    <option value="MX">MX</option>
+                                    <option value="TXT">TXT</option>
+                                    <option value="SPF">SPF</option>
+                                    <option value="DS">DS</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="text" class="form-control" placeholder="example." name="record_name" required>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control" placeholder="127.0.0.1" name="record_value" required>
+                            </div>
+                            <div class="col-sm">
+                                <input type="number" class="form-control" placeholder="TTL" name="record_ttl" value="600" required>
+                            </div>
+                            <div class="col-sm">
+                                <input type="number" class="form-control" placeholder="Priority" name="record_priority">
+                            </div>
+                            <div class="col-md-auto">
+                                <button class="btn btn-outline-primary btn-icon" type="submit" title="Add Record"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg></button>
+                            </div>
+                        </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            
+              <div class="col-12 mt-3">
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="w-1">Type</th>
+                                    <th scope="col" class="w-25">Name</th>
+                                    <th scope="col" class="w-45">Value</th>
+                                    <th scope="col" class="w-5">TTL</th>
+                                    <th scope="col" class="w-1">Priority</th>
+                                    <th scope="col" class="w-20">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordsTableBody">
+                                {% for record in records %}
+                                <form id="record-form-{{ record.recordId }}" class="mb-4 api-form" method="post" action="/zone/updaterecord">
+                                {{ csrf.field | raw }}
+                                    <input type="hidden" name="record_id" value="{{ record.recordId }}"/>
+                                    <input type="hidden" name="record_type" value="{{ record.type }}"/>
+                                    <input type="hidden" name="record_name" value="{{ record.host }}"/>
+                                    <input type="hidden" name="order_id" value="{{ order.id }}">
+                                    <tr>
+                                        <td>
+                                            {% set dns_type = record.type|upper %}
+                                            <span class="badge 
+                                            {% if dns_type == 'A' %}bg-blue-lt
+                                            {% elseif dns_type == 'AAAA' %}bg-indigo-lt
+                                            {% elseif dns_type == 'CNAME' %}bg-green-lt
+                                            {% elseif dns_type == 'MX' %}bg-orange-lt
+                                            {% elseif dns_type == 'TXT' %}bg-teal-lt
+                                            {% elseif dns_type == 'SPF' %}bg-red-lt
+                                            {% elseif dns_type == 'DS' %}bg-purple-lt
+                                            {% else %}bg-default
+                                            {% endif %}">{{ dns_type }}</span>
+                                        </td>
+                                        <td><strong>{{ record.host }}</strong></td>
+                                        <td><input type="text" class="form-control" placeholder="127.0.0.1" name="record_value" value="{{ record.value }}" style="min-width:200px;" required></td>
+                                        <td><input type="text" class="form-control" placeholder="600" name="record_ttl" value="{{ record.ttl }}" style="min-width:100px;" required></td>
+                                        <td>{% if record.type == 'MX' %}<span class="badge bg-dark-lt">{{ record.priority }}</span>{% endif %}</td>
+                                        <td class="text-end">
+                                            <button type="submit" class="btn btn-outline-primary btn-icon" name="action" value="update" title="Update Record">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger btn-icon" value="delete" title="Delete Record" onclick="confirmDelete('record-form-{{ record.recordId }}')">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" 
+                                                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" 
+                                                        stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>
+                                                        <path d="M10 10l4 4m0 -4l-4 4"/>
+                                                    </svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6">No DNS records found.</td>
+                                    </tr>
+                                {% endfor %}
+                                </form>
+                            </tbody>
+                        </table>
+                    </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% include 'partials/footer.twig' %}
+      </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function confirmDelete(formId) {
+    let form = document.getElementById(formId);
+
+    if (!form) {
+        console.error("Error: Delete button is not inside a form.");
+        return;
+    }
+
+    Swal.fire({
+        title: "Are you sure?",
+        text: "This record will be deleted permanently.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Remove any existing action input
+            let existingInput = form.querySelector("input[name='action']");
+            if (existingInput) {
+                existingInput.value = "delete"; // Just update it
+            } else {
+                // Create a hidden input for delete action
+                let input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "action";
+                input.value = "delete";
+                form.appendChild(input);
+            }
+
+            form.submit(); // Submit the form
+        }
+    });
+}
+</script>
+{% endblock %}

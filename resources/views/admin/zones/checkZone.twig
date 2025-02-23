@@ -1,0 +1,45 @@
+{% extends "layouts/app.twig" %}
+
+{% block title %}{{ __('Check Zone') }}{% endblock %}
+
+{% block content %}
+      <div class="page-wrapper">
+        <!-- Page header -->
+        <div class="page-header d-print-none">
+          <div class="container-xl">
+            <div class="row g-2 align-items-center">
+              <div class="col">
+                <!-- Page pre-title -->
+                <div class="page-pretitle">
+                  {{ __('Overview') }}
+                </div>
+                <h2 class="page-title">
+                  {{ __('Check Zone') }}
+                </h2>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Page body -->
+        <div class="page-body">
+          <div class="container-xl">
+            <div class="col-12">
+            {% include 'partials/flash.twig' %}
+              <div class="card">
+                <div class="card-body border-bottom py-3">
+                  <p class="mb-4">{{ __('Enter the zone you want to check:') }}</p>
+                    <form action="/domain/check" method="POST">
+                    {{ csrf.field | raw }}
+                      <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="yourdomain.com" name="domain_name" required="required" autocapitalize="none">
+                        <button type="submit" class="btn btn-primary">{{ __('Check Zone') }}</button>
+                      </div>
+                    </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% include 'partials/footer.twig' %}
+      </div>
+{% endblock %}

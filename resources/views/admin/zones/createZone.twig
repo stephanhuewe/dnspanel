@@ -1,0 +1,59 @@
+{% extends "layouts/app.twig" %}
+
+{% block title %}{{ __('Create Zone') }}{% endblock %}
+
+{% block content %}
+      <div class="page-wrapper">
+        <!-- Page header -->
+        <div class="page-header d-print-none">
+          <div class="container-xl">
+            <div class="row g-2 align-items-center">
+              <div class="col">
+                <!-- Page pre-title -->
+                <div class="page-pretitle">
+                  {{ __('Overview') }}
+                </div>
+                <h2 class="page-title">
+                  {{ __('Create Zone') }}
+                </h2>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Page body -->
+        <div class="page-body">
+          <div class="container-xl">
+            <div class="col-12">
+            {% include 'partials/flash.twig' %}
+                <div class="card">
+                    <div class="card-body">
+                        <form id="domainCreateForm" action="/zone/create" method="post">
+                        {{ csrf.field | raw }}
+                        
+                        <div class="row">
+                          <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="domainName" class="form-label required">{{ __('Your Zone') }}</label>
+                                <input type="text" class="form-control mb-2" placeholder="example.com" name="domainName" id="domainName" required="required" autocapitalize="none">
+                            </div>
+                         
+
+                          </div>
+                        </div>
+
+                    </div>
+                <div class="card-footer">
+                  <div class="row align-items-center">
+                    <div class="col-auto">
+                      <button type="submit" class="btn btn-primary">{{ __('Create Zone') }}</button>
+                    </div>
+                  </div>
+                </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% include 'partials/footer.twig' %}
+      </div>
+{% endblock %}

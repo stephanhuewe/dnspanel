@@ -1,0 +1,61 @@
+{
+    "name": "pinga/pinga-panel",
+    "description": "Namingo Registry Control Panel",
+    "type": "project",
+    "keywords": ["slim", "slim 4", "domain", "registry", "panel"],
+    "homepage": "https://github.com/getpinga/pinga-panel",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Taras Kondratyuk",
+            "email": "tk@gepinga.com"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "ext-pdo": "*",
+        "slim/slim": "4.14.0",
+        "slim/twig-view": "^3.4.0",
+        "monolog/monolog": "^3.7.0",
+        "respect/validation": "^2.3",
+        "slim/csrf": "^1.5",
+        "slim/flash": "^0.4",
+        "vlucas/phpdotenv": "^5.6",
+        "php-di/php-di": "^7.0.7",
+        "nyholm/psr7": "^1.8.1",
+        "nyholm/psr7-server": "^1.1.0",
+        "pinga/auth": "^0.3.4",
+        "filp/whoops": "^2.15.3",
+        "mevdschee/php-crud-api": "^2.14",
+        "gettext/gettext": "^5.7",
+        "punic/punic": "^3.8.1",
+        "league/iso3166": "^4.3.1",
+        "robthree/twofactorauth": "^3.0.0",
+        "lbuchs/webauthn": "^2.2",
+        "bacon/bacon-qr-code": "^3.0",
+        "jeremykendall/php-domain-parser": "^6.3",
+        "matthiasmullie/scrapbook": "^1.5.3",
+        "guzzlehttp/guzzle": "^7.9.2",
+        "league/flysystem": "^3.28",
+        "mpociot/vat-calculator": "^3.11.0",
+        "ramsey/uuid": "^4.7",
+        "egulias/email-validator": "^4.0",
+        "utopia-php/messaging": "^0.12.0",
+        "brick/postcode": "^0.3.3",
+        "utopia-php/system": "^0.9.0",
+        "bjeavons/zxcvbn-php": "^1.4",
+        "phpmailer/phpmailer": "^6.9",
+        "filips123/monolog-phpmailer": "^2.0",
+        "namingo/plexdns": "^0.9.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    }
+}
