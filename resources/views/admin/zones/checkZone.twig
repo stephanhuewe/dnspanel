@@ -28,7 +28,7 @@
               <div class="card">
                 <div class="card-body border-bottom py-3">
                   <p class="mb-4">{{ __('Enter the zone you want to check:') }}</p>
-                    <form action="/domain/check" method="POST">
+                    <form action="/zone/check" method="POST">
                     {{ csrf.field | raw }}
                       <div class="input-group mb-3">
                         <input type="text" class="form-control" placeholder="yourdomain.com" name="domain_name" required="required" autocapitalize="none">
