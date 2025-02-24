@@ -39,7 +39,7 @@ class UsersController extends Controller
             $status = $data['status'] ?? null;
             $verified = $data['verified'] ?? null;
             $role = $data['role'] ?? null;
-            $registrar_id = $data['registrar_id'] ?? null;
+            $zone_id = $data['registrar_id'] ?? null;
 
             // Define validation rules
             $validators = [
@@ -48,11 +48,11 @@ class UsersController extends Controller
                 'password' => v::stringType()->notEmpty()->length(6, 255)->setName('Password'),
                 'password_confirmation' => v::equals($data['password'] ?? '')->setName('Password Confirmation'),
                 'status' => v::in(['0', '4'])->setName('Status'),
-                'role' => v::in(['admin', 'registrar'])->setName('Role'),
+                'role' => v::in(['admin', 'zone'])->setName('Role'),
             ];
 
             // Add registrar_id validation if role is registrar
-            if (($data['role'] ?? '') === 'registrar') {
+            if (($data['role'] ?? '') === 'zone') {
                 $validators['registrar_id'] = v::numericVal()->notEmpty()->setName('Registrar ID');
             }
 
@@ -88,7 +88,6 @@ class UsersController extends Controller
                 return $response->withHeader('Location', '/user/create')->withStatus(302);
             }
 
-            $registrars = $db->select("SELECT id, clid, name FROM registrar");
             if ($_SESSION["auth_roles"] != 0) {
                 $registrar = true;
             } else {
@@ -96,7 +95,7 @@ class UsersController extends Controller
             }
 
             if ($email) {                
-                if ($registrar_id) {                   
+                if ($zone_id) {                   
                     $db->beginTransaction();
 
                     $password_hashed = password_hash($password, PASSWORD_ARGON2ID, ['memory_cost' => 1024 * 128, 'time_cost' => 6, 'threads' => 4]);
@@ -117,9 +116,9 @@ class UsersController extends Controller
                         $user_id = $db->getLastInsertId();
 
                         $db->insert(
-                            'registrar_users',
+                            'zone_users',
                             [
-                                'registrar_id' => $registrar_id,
+                                'zone_id' => $zone_id,
                                 'user_id' => $user_id
                             ]
                         );
@@ -168,7 +167,7 @@ class UsersController extends Controller
         }
 
         $db = $this->container->get('db');
-        $registrars = $db->select("SELECT id, clid, name FROM registrar");
+        $zones = $db->select("SELECT id, domain_name FROM zones");
         if ($_SESSION["auth_roles"] != 0) {
             $registrar = true;
         } else {
@@ -177,7 +176,7 @@ class UsersController extends Controller
 
         // Default view for GET requests or if POST data is not set
         return view($response,'admin/users/createUser.twig', [
-            'registrars' => $registrars,
+            'zones' => $zones,
             'registrar' => $registrar,
         ]);
     }
@@ -187,7 +186,7 @@ class UsersController extends Controller
         $db = $this->container->get('db');
         // Get the current URI
         $uri = $request->getUri()->getPath();
-        $registrars = $db->select("SELECT id, clid, name FROM registrar");
+        $zones = $db->select("SELECT id, domain_name FROM zones");
 
         if ($args) {
             $args = trim($args);
@@ -199,9 +198,9 @@ class UsersController extends Controller
 
             $user = $db->selectRow('SELECT id,email,username,status,verified,roles_mask,registered,last_login FROM users WHERE username = ?',
             [ $args ]);
-            $user_asso = $db->selectValue('SELECT registrar_id FROM registrar_users WHERE user_id = ?',
+            $user_asso = $db->selectValue('SELECT zone_id FROM zone_users WHERE user_id = ?',
             [ $user['id'] ]);
-            $registrar_name = $db->selectValue('SELECT name FROM registrar WHERE id = ?',
+            $zone_name = $db->selectValue('SELECT domain_name FROM zones WHERE id = ?',
             [ $user_asso ]);
 
             if ($user) {
@@ -213,7 +212,7 @@ class UsersController extends Controller
                 $_SESSION['user_to_update'] = [$args];
 
                 $roles_new = [
-                    '4'  => ($user['roles_mask'] & 4)  ? true : false, // Registrar
+                    '4'  => ($user['roles_mask'] & 4)  ? true : false, // Zone
                     '8'  => ($user['roles_mask'] & 8)  ? true : false, // Accountant
                     '16' => ($user['roles_mask'] & 16) ? true : false, // Support
                     '32' => ($user['roles_mask'] & 32) ? true : false, // Auditor
@@ -223,9 +222,9 @@ class UsersController extends Controller
                 return view($response,'admin/users/updateUser.twig', [
                     'user' => $user,
                     'currentUri' => $uri,
-                    'registrars' => $registrars,
+                    'zones' => $zones,
                     'user_asso' => $user_asso,
-                    'registrar_name' => $registrar_name,
+                    'zone_name' => $zone_name,
                     'roles_new' => $roles_new
                 ]);
             } else {

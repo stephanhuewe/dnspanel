@@ -96,10 +96,10 @@
                           <label class="form-label">{{ __('Type') }}</label>
                           <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="role-toggle" name="role" value="admin">
-                            <label class="form-check-label" for="role-toggle" id="role-label">{{ __('Registrar') }}</label>
+                            <label class="form-check-label" for="role-toggle" id="role-label">{{ __('Zone') }}</label>
                           </div>
                           <!-- Hidden input to ensure "registrar" is sent when the toggle is off -->
-                          <input type="hidden" name="role" id="hidden-role" value="registrar">
+                          <input type="hidden" name="role" id="hidden-role" value="zone">
                         </div>
                       </div>
                     </div>
@@ -107,11 +107,11 @@
                     <!-- Registrar-specific fields -->
                     <div id="registrar-fields" style="display: none;">
                       <div class="mb-3">
-                        <label class="form-label">{{ __('Registrar Association') }}</label>
+                        <label class="form-label">{{ __('Zone Association') }}</label>
                         <select class="form-select" name="registrar_id">
-                          <option value="" disabled selected>{{ __('Select registrar') }}</option>
-                          {% for registrar in registrars %}
-                            <option value="{{ registrar.id }}">{{ registrar.name }}</option>
+                          <option value="" disabled selected>{{ __('Select zone') }}</option>
+                          {% for zone in zones %}
+                            <option value="{{ zone.id }}">{{ zone.domain_name }}</option>
                           {% endfor %}
                         </select>
                       </div>
@@ -146,8 +146,8 @@ document.addEventListener("DOMContentLoaded", function () {
             registrarFields.style.display = "none"; // Hide registrar-specific fields
         } else {
             // Registrar role selected
-            hiddenRoleInput.value = "registrar";
-            roleLabel.textContent = "Registrar"; // Update label to Registrar
+            hiddenRoleInput.value = "zone";
+            roleLabel.textContent = "Zone"; // Update label to Registrar
             registrarFields.style.display = "block"; // Show registrar-specific fields
         }
     }
