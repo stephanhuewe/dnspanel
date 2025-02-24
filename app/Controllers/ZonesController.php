@@ -232,9 +232,32 @@ class ZonesController extends Controller
                 }
 
                 $service = new Service($pdo);
+                $config = [
+                    'domain_name' => $domainName,
+                    'provider' => $provider,
+                    'apikey' => $apiKey,
+                ];
+                if ($bindip !== '127.0.0.1' && isValidIP($bindip)) {
+                    $config['bindip'] = $bindip;
+                }
+                if ($powerdnsip !== '127.0.0.1' && isValidIP($powerdnsip)) {
+                    $config['powerdnsip'] = $powerdnsip;
+                }
+                if ($provider === 'ClouDNS') {
+                    if (!empty($cloudnsAuthId) && $cloudnsAuthId !== 'your-cloudns-auth-id' &&
+                        !empty($cloudnsAuthPassword) && $cloudnsAuthPassword !== 'your-cloudns-password') {
+                        
+                        $config['cloudns_auth_id'] = $cloudnsAuthId;
+                        $config['cloudns_auth_password'] = $cloudnsAuthPassword;
+                    } else {
+                        $this->container->get('flash')->addMessage('error', 'Error: Invalid ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
+                        return $response->withHeader('Location', '/zone/create')->withStatus(302);
+                    }
+                }
+
                 $domainOrder = [
                     'client_id' => $_SESSION['auth_user_id'],
-                    'config' => json_encode(['domain_name' => $domainName, 'provider' => $provider, 'apikey' => $apiKey]),
+                    'config' => json_encode($config),
                 ];
                 $domain = $service->createDomain($domainOrder);
             } catch (Exception $e) {
@@ -419,6 +442,23 @@ class ZonesController extends Controller
                     'provider' => $provider,
                     'apikey' => $apiKey
                 ];
+                if ($bindip !== '127.0.0.1' && isValidIP($bindip)) {
+                    $recordData['bindip'] = $bindip;
+                }
+                if ($powerdnsip !== '127.0.0.1' && isValidIP($powerdnsip)) {
+                    $recordData['powerdnsip'] = $powerdnsip;
+                }
+                if ($provider === 'ClouDNS') {
+                    if (!empty($cloudnsAuthId) && $cloudnsAuthId !== 'your-cloudns-auth-id' &&
+                        !empty($cloudnsAuthPassword) && $cloudnsAuthPassword !== 'your-cloudns-password') {
+                        
+                        $recordData['cloudns_auth_id'] = $cloudnsAuthId;
+                        $recordData['cloudns_auth_password'] = $cloudnsAuthPassword;
+                    } else {
+                        $this->container->get('flash')->addMessage('error', 'Error: Invalid ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
+                        return $response->withHeader('Location', '/zone/update/'.$domainName)->withStatus(302);
+                    }
+                }
                 $recordId = $service->addRecord($recordData);
             } catch (Throwable $e) {  // Catch generic exceptions
                 $this->container->get('flash')->addMessage('error', 'Database failure during update: ' . $e->getMessage());
@@ -482,7 +522,6 @@ class ZonesController extends Controller
                 }
 
                 $service = new Service($pdo);
-
                 if ($data['action'] == 'delete') {
                     $deleteData = [
                         'domain_name' => $domainName,
@@ -493,6 +532,23 @@ class ZonesController extends Controller
                         'provider' => $provider,
                         'apikey' => $apiKey
                     ];
+                    if ($bindip !== '127.0.0.1' && isValidIP($bindip)) {
+                        $deleteData['bindip'] = $bindip;
+                    }
+                    if ($powerdnsip !== '127.0.0.1' && isValidIP($powerdnsip)) {
+                        $deleteData['powerdnsip'] = $powerdnsip;
+                    }
+                    if ($provider === 'ClouDNS') {
+                        if (!empty($cloudnsAuthId) && $cloudnsAuthId !== 'your-cloudns-auth-id' &&
+                            !empty($cloudnsAuthPassword) && $cloudnsAuthPassword !== 'your-cloudns-password') {
+                            
+                            $deleteData['cloudns_auth_id'] = $cloudnsAuthId;
+                            $deleteData['cloudns_auth_password'] = $cloudnsAuthPassword;
+                        } else {
+                            $this->container->get('flash')->addMessage('error', 'Error: Invalid ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
+                            return $response->withHeader('Location', '/zone/update/'.$domainName)->withStatus(302);
+                        }
+                    }
                     $service->delRecord($deleteData);
                 } else {
                     $updateData = [
@@ -506,6 +562,23 @@ class ZonesController extends Controller
                         'provider' => $provider,
                         'apikey' => $apiKey
                     ];
+                    if ($bindip !== '127.0.0.1' && isValidIP($bindip)) {
+                        $updateData['bindip'] = $bindip;
+                    }
+                    if ($powerdnsip !== '127.0.0.1' && isValidIP($powerdnsip)) {
+                        $updateData['powerdnsip'] = $powerdnsip;
+                    }
+                    if ($provider === 'ClouDNS') {
+                        if (!empty($cloudnsAuthId) && $cloudnsAuthId !== 'your-cloudns-auth-id' &&
+                            !empty($cloudnsAuthPassword) && $cloudnsAuthPassword !== 'your-cloudns-password') {
+                            
+                            $updateData['cloudns_auth_id'] = $cloudnsAuthId;
+                            $updateData['cloudns_auth_password'] = $cloudnsAuthPassword;
+                        } else {
+                            $this->container->get('flash')->addMessage('error', 'Error: Invalid ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
+                            return $response->withHeader('Location', '/zone/update/'.$domainName)->withStatus(302);
+                        }
+                    }
                     $service->updateRecord($updateData);
                 }
             } catch (Exception $e) {  // Catch generic exceptions
@@ -563,7 +636,33 @@ class ZonesController extends Controller
                 }
 
                 $service = new Service($pdo);
-                $service->deleteDomain(['config' => json_encode(['domain_name' => $args, 'provider' => $provider, 'apikey' => $apiKey])]);
+                $config = [
+                    'domain_name' => $args,
+                    'provider' => $provider,
+                    'apikey' => $apiKey,
+                ];
+                if ($bindip !== '127.0.0.1' && isValidIP($bindip)) {
+                    $config['bindip'] = $bindip;
+                }
+                if ($powerdnsip !== '127.0.0.1' && isValidIP($powerdnsip)) {
+                    $config['powerdnsip'] = $powerdnsip;
+                }
+                if ($provider === 'ClouDNS') {
+                    if (!empty($cloudnsAuthId) && $cloudnsAuthId !== 'your-cloudns-auth-id' &&
+                        !empty($cloudnsAuthPassword) && $cloudnsAuthPassword !== 'your-cloudns-password') {
+                        
+                        $config['cloudns_auth_id'] = $cloudnsAuthId;
+                        $config['cloudns_auth_password'] = $cloudnsAuthPassword;
+                    } else {
+                        $this->container->get('flash')->addMessage('error', 'Error: Invalid ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
+                        return $response->withHeader('Location', '/zones')->withStatus(302);
+                    }
+                }
+
+                $domainOrder = [
+                    'config' => json_encode($config),
+                ];
+                $service->deleteDomain($domainOrder);
 
                 $this->container->get('flash')->addMessage('success', 'Zone ' . $domainName . ' deleted successfully');
                 return $response->withHeader('Location', '/zones')->withStatus(302);
