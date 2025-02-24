@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS `dns`.`zones` (
     `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-				
+                
 CREATE TABLE IF NOT EXISTS `dns`.`records` (
     `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
     `domain_id` BIGINT(20) NOT NULL,
@@ -128,4 +128,15 @@ CREATE TABLE IF NOT EXISTS `dns`.`zone_users` (
     PRIMARY KEY (`zone_id`, `user_id`),
     FOREIGN KEY (`zone_id`) REFERENCES `zones`(`id`) ON DELETE CASCADE,
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `dns`.`error_log` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+    `channel` VARCHAR(255), 
+    `level` INT(3),
+    `level_name` VARCHAR(10),
+    `message` TEXT,
+    `context` JSON,
+    `extra` JSON,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
