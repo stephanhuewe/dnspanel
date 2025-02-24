@@ -8,12 +8,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Container\ContainerInterface;
 
 class LogsController extends Controller
-{
-    public function view(Request $request, Response $response)
-    {
-        return view($response,'admin/logs/index.twig');
-    }
-   
+{ 
     public function log(Request $request, Response $response)
     {
         if ($_SESSION["auth_roles"] != 0) {

@@ -20,42 +20,6 @@ class ReportsController extends Controller
         $csrfTokenName = $this->container->get('csrf')->getTokenName();
         $csrfTokenValue = $this->container->get('csrf')->getTokenValue();
         
-        // Helper function to check service status
-        $checkServiceStatus = function ($serviceName) {
-            $output = @shell_exec("service $serviceName status");
-            return ($output && strpos($output, 'active (running)') !== false) ? 'Running' : 'Stopped';
-        };
-
-        // Helper function to read the last 50 lines of a log file and convert to string
-        $getLogLines = function ($logPrefix) {
-            $currentDate = date('Y-m-d');
-            $logFile = "/var/log/namingo/{$logPrefix}-$currentDate.log";
-
-            if (file_exists($logFile)) {
-                $output = @shell_exec("tail -n 50 " . escapeshellarg($logFile));
-                return $output ? $output : "Log file is empty.";
-            }
-
-            return "Log file not found: $logFile";
-        };
-        
-        // Check statuses
-        $eppStatus = $checkServiceStatus('epp');
-        $whoisStatus = $checkServiceStatus('whois');
-        $rdapStatus = $checkServiceStatus('rdap');
-        $dasStatus = $checkServiceStatus('das');
-        $msgbStatus = $checkServiceStatus('msg_producer');
-        $msgwStatus = $checkServiceStatus('msg_worker');
-        $redisStatus = $checkServiceStatus('redis');
-
-        // Get log lines as strings
-        $eppLogs = $getLogLines('epp');
-        $whoisLogs = $getLogLines('whois');
-        $rdapLogs = $getLogLines('rdap');
-        $dasLogs = $getLogLines('das');
-        $msgbLogs = $getLogLines('msg_producer');
-        $msgwLogs = $getLogLines('msg_worker');
-
         $system = new System();
 
         $serverHealth = [
@@ -67,64 +31,10 @@ class ReportsController extends Controller
             'getDiskFree' => $system->getDiskFree()
         ];
 
-        $logFile = '/var/log/namingo/backup.log';
-
-        // Check if the file exists
-        if (!file_exists($logFile)) {
-            $backupSummary = "Backup log file not found.";
-        } else {
-            // Read and decode JSON file
-            $logData = json_decode(file_get_contents($logFile), true);
-
-            if (json_last_error() !== JSON_ERROR_NONE || !is_array($logData)) {
-                $backupSummary = "Invalid JSON format in backup log file.";
-            } else {
-                // Start building the summary
-                $backupSummary = "Backup Summary:\n";
-                $backupSummary .= "Timestamp: " . date('Y-m-d H:i:s', $logData['timestamp'] ?? time()) . "\n";
-                $backupSummary .= "Duration: " . round($logData['duration'] ?? 0, 2) . " seconds\n";
-                $backupSummary .= "Total Backups: " . ($logData['backupCount'] ?? 0) . "\n";
-                $backupSummary .= "Failed Backups: " . ($logData['backupFailed'] ?? 0) . "\n";
-                $backupSummary .= "Errors: " . ($logData['errorCount'] ?? 0) . "\n";
-
-                if (!empty($logData['backups'])) {
-                    foreach ($logData['backups'] as $backup) {
-                        $backupSummary .= "\nBackup: " . ($backup['name'] ?? 'Unknown') . "\n";
-                        $backupSummary .= "- Status: " . (($backup['status'] ?? 1) === 0 ? 'Success' : 'Failed') . "\n";
-                        $backupSummary .= "- Checks: " . ($backup['checks']['executed'] ?? 0) . " executed, " . ($backup['checks']['failed'] ?? 0) . " failed\n";
-                        $backupSummary .= "- Syncs: " . ($backup['syncs']['executed'] ?? 0) . " executed, " . ($backup['syncs']['failed'] ?? 0) . " failed\n";
-                        $backupSummary .= "- Cleanup: " . ($backup['cleanup']['executed'] ?? 0) . " executed, " . ($backup['cleanup']['failed'] ?? 0) . " failed\n";
-                    }
-                }
-
-                if (!empty($logData['debug'])) {
-                    $backupSummary .= "\nDebug Info (last 5 entries):\n";
-                    $debugEntries = array_slice($logData['debug'], -5);
-                    foreach ($debugEntries as $entry) {
-                        $backupSummary .= "- $entry\n";
-                    }
-                }
-            }
-        }
-
         return $this->view->render($response, 'admin/reports/serverHealth.twig', [
             'serverHealth' => $serverHealth,
             'csrfTokenName' => $csrfTokenName,
             'csrfTokenValue' => $csrfTokenValue,
-            'backupLog' => nl2br(htmlspecialchars($backupSummary)),
-            'eppStatus' => $eppStatus,
-            'whoisStatus' => $whoisStatus,
-            'rdapStatus' => $rdapStatus,
-            'dasStatus' => $dasStatus,
-            'eppLogs' => $eppLogs,
-            'whoisLogs' => $whoisLogs,
-            'rdapLogs' => $rdapLogs,
-            'dasLogs' => $dasLogs,
-            'msgbStatus' => $msgbStatus,
-            'msgwStatus' => $msgwStatus,
-            'msgbLogs' => $msgbLogs,
-            'msgwLogs' => $msgwLogs,
-            'redisStatus' => $redisStatus
         ]);
     }
 

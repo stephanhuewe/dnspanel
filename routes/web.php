@@ -51,22 +51,12 @@ $app->group('', function ($route) {
     $route->get('/user/update/{user}', UsersController::class . ':updateUser')->setName('updateUser');
     $route->post('/user/update', UsersController::class . ':updateUserProcess')->setName('updateUserProcess');
 
-    $route->get('/epphistory', LogsController::class .':view')->setName('epphistory');
-    $route->get('/poll', LogsController::class .':poll')->setName('poll');
     $route->get('/log', LogsController::class .':log')->setName('log');
 
     $route->get('/server', ReportsController::class .':serverHealth')->setName('serverHealth');
     $route->post('/clear-cache', ReportsController::class .':clearCache')->setName('clearCache');
 
-    $route->map(['GET', 'POST'], '/registry', SystemController::class .':registry')->setName('registry');
-    $route->map(['GET', 'POST'], '/registry/tld/create', SystemController::class .':createTld')->setName('createTld');
-    $route->map(['GET', 'POST'], '/registry/tld/{tld}', SystemController::class . ':manageTld')->setName('manageTld');
-    $route->get('/registry/tlds', SystemController::class .':listTlds')->setName('listTlds');
-    $route->map(['GET', 'POST'], '/registry/reserved', SystemController::class .':manageReserved')->setName('manageReserved');
-    $route->map(['GET', 'POST'], '/registry/tokens', SystemController::class .':manageTokens')->setName('manageTokens');
-    $route->post('/registry/promotions', SystemController::class . ':managePromo')->setName('managePromo');
-    $route->post('/registry/phases', SystemController::class . ':managePhases')->setName('managePhases');
-    $route->get('/registry/idnexport/{script}', SystemController::class .':idnexport')->setName('idnexport');
+    $route->map(['GET', 'POST'], '/providers', SystemController::class .':providers')->setName('providers');
 
     $route->get('/profile', ProfileController::class .':profile')->setName('profile');
     $route->post('/profile/2fa', ProfileController::class .':activate2fa')->setName('activate2fa');
