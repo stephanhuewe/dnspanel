@@ -153,6 +153,7 @@ class DapiController extends Controller
         $selectFields = "
             d.id, 
             d.domain_name, 
+            d.config, 
             d.created_at, 
             d.updated_at
         ";
@@ -186,6 +187,13 @@ class DapiController extends Controller
                 $row['domain_name_o'] = $row['domain_name'];
             }
 
+            // Extract provider from JSON config
+            if (!empty($row['config'])) {
+                $configData = json_decode($row['config'], true); // Decode JSON
+                $row['config'] = $configData['provider'] ?? "N/A"; // Keep only provider value or default
+            } else {
+                $row['config'] = "N/A"; // Default for empty config
+            }
         }
 
         $payload = [
