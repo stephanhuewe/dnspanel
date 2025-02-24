@@ -16,10 +16,7 @@ class HomeController extends Controller
                     ? 'index.custom.twig' 
                     : 'index.twig';
         return view($response, $template, [
-            'whois_server' => $whois_server,
-            'rdap_server' => $rdap_server,
-            'company_name' => $company_name,
-            'email' => $email
+            'copyright' => envi("APP_DOMAIN")
         ]);
     }
 
@@ -42,15 +39,19 @@ class HomeController extends Controller
 
         if ($clid !== null) {
             $zones = $db->selectValue('SELECT count(id) as zones FROM zones WHERE client_id = ?', [$clid]);
+            $latest_zones = $db->select('SELECT domain_name, created_at FROM zones WHERE client_id = ? ORDER BY created_at DESC LIMIT 10', [$clid]);
             
             return view($response, 'admin/dashboard/index.twig', [
                 'zones' => $zones,
+                'latest_zones' => $latest_zones,
             ]);
         } else {
             $zones = $db->selectValue('SELECT count(id) as zones FROM zones');
+            $latest_zones = $db->select('SELECT domain_name, created_at FROM zones ORDER BY created_at DESC LIMIT 10');
 
             return view($response, 'admin/dashboard/index.twig', [
                 'zones' => $zones,
+                'latest_zones' => $latest_zones,
             ]);
         }
     }

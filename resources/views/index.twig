@@ -3,11 +3,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="Namingo Registry Panel - a powerful solution for managing domains, registrars, and registry operations seamlessly.">
+    <meta name="description" content="Namingo DNS Panel - a powerful multi-provider DNS management tool that allows users to manage DNS zones.">
     <meta name="author" content="Namingo Team">
-    <meta name="keywords" content="Namingo, Registry Panel, Domain Management, Registrar Tools, Namingo Software, ICANN, Domain Registrar">
+    <meta name="keywords" content="Namingo, DNS Panel, Domain Management, Registrar Tools, Namingo Software, ICANN, Domain Registrar">
     <meta name="theme-color" content="#A62A6C">
-    <title>Registry Panel</title>
+    <title>DNS Panel</title>
     {% include 'partials/css.twig' %}
     <style>
       @import url('/assets/fonts/inter/inter.css');
@@ -50,21 +50,6 @@
                             </a>
                         </li>
                         {% endif %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="https://{{ whois_server }}" target="_blank">
-                                WHOIS
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ rdap_server }}" target="_blank">
-                                RDAP
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="mailto:{{ email }}">
-                                Support Team
-                            </a>
-                        </li>
                     </ul>
                 </div>
             </div>
@@ -73,7 +58,7 @@
     <main class="flex-grow-1">
         <div class="container-fluid p-5 rounded-3 bg-light text-center">
             <div class="text-center my-5">
-                <h1 class="fw-bold">Registry Panel</h1>
+                <h1 class="fw-bold">DNS Panel</h1>
             </div>
 
             <div class="row row-cols-1 row-cols-md-2 g-4 mt-6">
@@ -83,9 +68,9 @@
                             <h5 class="card-title">Open Panel</h5>
                             <p class="card-text">
                                 {% if auth.isLogin %}
-                                Access your registrar dashboard and manage domains.
+                                Access your DNS dashboard and manage zones.
                                 {% else %}
-                                Log in to access your registrar dashboard and manage domains.
+                                Log in to access your DNS dashboard and manage zones.
                                 {% endif %}
                             </p>
                             {% if auth.isLogin %}
@@ -99,28 +84,14 @@
                 <div class="col">
                     <div class="card">
                         <div class="card-body text-center">
-                            <h5 class="card-title">WHOIS & RDAP</h5>
-                            <p class="card-text">Access domain information with our WHOIS and RDAP services.</p>
-                            <a href="https://{{ whois_server }}" target="_blank" class="btn btn-secondary me-2">WHOIS</a>
-                            <a href="{{ rdap_server }}" target="_blank" class="btn btn-secondary">RDAP</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">Support Team</h5>
-                            <p class="card-text">Get assistance, guidance, FAQs, and support for your needs.</p>
-                            <a href="mailto:{{ email }}" class="btn btn-success">Contact Support</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">Become a Registrar</h5>
-                            <p class="card-text">Interested in partnering with us? Apply to become an official registrar.</p>
-                            <a href="#" class="btn btn-warning">Apply Now</a>
+                            <h5 class="card-title">DNS Tools</h5>
+                            <p class="card-text">Quickly access DNS records and analysis tools.</p>
+                            <div class="d-flex flex-wrap justify-content-center gap-2">
+                                <a href="https://dnsrecords.io/" target="_blank" class="btn btn-secondary">dnsrecords.io</a>
+                                <a href="https://digwebinterface.com/" target="_blank" class="btn btn-secondary">Web DIG</a>
+                                <a href="https://tools.keycdn.com/dig" target="_blank" class="btn btn-secondary">DNS Checker</a>
+                                <a href="https://mxtoolbox.com/" target="_blank" class="btn btn-secondary">MX Lookup</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -135,7 +106,7 @@
     </main>
     <footer class="footer bg-white border-top shadow-sm py-3">
         <div class="container">
-            <span class="text-muted">&copy; {{ 'now' | date('Y') }} <strong>{{ company_name }}</strong>. All rights reserved.</span>
+            <span class="text-muted">&copy; {{ 'now' | date('Y') }} <strong>{{ copyright }}</strong>. All rights reserved.</span>
         </div>
     </footer>
     {% include 'partials/js.twig' %}

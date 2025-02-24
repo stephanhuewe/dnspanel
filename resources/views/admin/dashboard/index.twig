@@ -38,8 +38,7 @@
               <div class="col-12">
               {% include 'partials/flash.twig' %}
                 <div class="row row-cards">
-                  {% if registrars %}
-                  <div class="{% if minimum_data == 'false' %}col-sm-6 col-lg-3{% else %}col-sm-4 col-lg-4{% endif %}">
+                  <div class="col-12 col-lg-6">
                     <a class="card card-link" href="{{route('listZones')}}">
                       <div class="card-body">
                         <div class="row align-items-center">
@@ -56,50 +55,9 @@
                       </div>
                     </a>
                   </div>
-                  <div class="col-lg-6 col-xl-4">
-                    <div class="card">
-                      <div class="card-body">
-                        <h3 class="card-title">{{ __('Last 7 Days: Domain Registrations') }}</h3>
-                        <div id="last-7-days"></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-lg-6 col-xl-4">
-                    <div class="card">
-                      <div class="card-body">
-                      <h3 class="card-title">{{ __('Top Registrars by Domains') }}</h3>
-                        <div id="top-registrars"></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-lg-6 col-xl-4">
-                    <div class="card">
-                      <div class="card-body">
-                      <h3 class="card-title">{{ __('Support Tickets: Last Week') }}</h3>
-                        <div id="support-tickets"></div>
-                      </div>
-                    </div>
-                  </div>
-                  {% else %}
-                  <div class="{% if minimum_data == 'false' %}col-sm-4 col-lg-4{% else %}col-sm-6 col-lg-6{% endif %}">
-                    <a class="card card-link" href="{{route('listZones')}}">
-                      <div class="card-body">
-                        <div class="row align-items-center">
-                          <div class="col-auto">
-                            <span class="bg-primary text-white avatar avatar-lg"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M19.5 7a9 9 0 0 0 -7.5 -4a8.991 8.991 0 0 0 -7.484 4"></path><path d="M11.5 3a16.989 16.989 0 0 0 -1.826 4"></path><path d="M12.5 3a16.989 16.989 0 0 1 1.828 4"></path><path d="M19.5 17a9 9 0 0 1 -7.5 4a8.991 8.991 0 0 1 -7.484 -4"></path><path d="M11.5 21a16.989 16.989 0 0 1 -1.826 -4"></path><path d="M12.5 21a16.989 16.989 0 0 0 1.828 -4"></path><path d="M2 10l1 4l1.5 -4l1.5 4l1 -4"></path>   <path d="M17 10l1 4l1.5 -4l1.5 4l1 -4"></path><path d="M9.5 10l1 4l1.5 -4l1.5 4l1 -4"></path></svg>
-                            </span>
-                          </div>
-                          <div class="col">
-                            <div class="h1 mt-3">
-                              {{ zones }} {{ __('Zones') }}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </a>
-                  </div>
-                  {% endif %}
-                  <div class="col-12 col-md-6 mt-5">
+                </div>
+                <div class="row row-cards mt-4">
+                  <div class="col-12 col-md-6">
                     <div class="card">
                       <div class="card-header">
                         <h3 class="card-title">{{ __('Recent Zones') }}</h3>
@@ -108,16 +66,16 @@
                         <table class="table table-vcenter card-table table-striped">
                           <thead>
                             <tr>
-                              <th>{{ __('Name') }}</th>
+                              <th>{{ __('Zone') }}</th>
                               <th>{{ __('Creation Date') }}</th>
                             </tr>
                           </thead>
                           <tbody>
-                          {% if latest_domains|length > 0 %}
-                            {% for domain in latest_domains %}
+                          {% if latest_zones|length > 0 %}
+                            {% for zone in latest_zones %}
                               <tr>
-                                <td><a href="/domain/view/{{ domain.name }}">{{ domain.name }}</a></td>
-                                <td class="text-secondary">{{ domain.crdate }}</td>
+                                <td><a href="/zone/view/{{ zone.domain_name }}">{{ zone.domain_name }}</a></td>
+                                <td class="text-secondary">{{ zone.created_at }}</td>
                               </tr>
                             {% endfor %}
                           {% else %}
@@ -128,34 +86,17 @@
                       </div>
                     </div>
                   </div>
-                  <div class="col-12 col-md-6 mt-5">
+                  <div class="col-12 col-md-6">
                     <div class="card">
-                      <div class="card-header">
-                        <h3 class="card-title">{{ __('Recent Support Tickets') }}</h3>
-                      </div>
-                      <div class="table-responsive">
-                        <table class="table table-vcenter card-table table-striped">
-                          <thead>
-                            <tr>
-                              <th>{{ __('Subject') }}</th>
-                              <th>{{ __('Status') }}</th>
-                              <th>{{ __('Priority') }}</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                          {% if tickets|length > 0 %}
-                            {% for ticket in tickets %}
-                              <tr>
-                                <td><a href="/ticket/{{ ticket.id }}">{{ ticket.subject|length > 30 ? (ticket.subject|slice(0, 30) ~ '…') : ticket.subject }}</a></td>
-                                <td class="text-secondary">{{ __(ticket.status) }}</td>
-                                <td class="text-secondary">{{ __(ticket.priority) }}</td>
-                              </tr>
-                            {% endfor %}
-                          {% else %}
-                            <tr><td colspan="3">{{ __('No Data') }}</td></tr>
-                          {% endif %}
-                          </tbody>
-                        </table>
+                      <div class="card-body">
+                          <h3 class="card-title">{{ __('DNS Tools') }}</h3>
+                          <p class="card-text">{{ __('Quickly access DNS records and analysis tools.') }}</p>
+                          <div class="d-flex flex-wrap justify-content-center gap-2">
+                              <a href="https://dnsrecords.io/" target="_blank" class="btn btn-secondary">dnsrecords.io</a>
+                              <a href="https://digwebinterface.com/" target="_blank" class="btn btn-secondary">Web DIG</a>
+                              <a href="https://tools.keycdn.com/dig" target="_blank" class="btn btn-secondary">DNS Checker</a>
+                              <a href="https://mxtoolbox.com/" target="_blank" class="btn btn-secondary">MX Lookup</a>
+                          </div>
                       </div>
                     </div>
                   </div>

@@ -138,7 +138,7 @@ class ReportsController extends Controller
             'success' => true,
             'message' => 'Cache cleared successfully!',
         ];
-        $cacheDir = '/var/www/cp/cache';
+        $cacheDir = '/var/www/dns/cache';
 
         try {
             // Check if the cache directory exists
