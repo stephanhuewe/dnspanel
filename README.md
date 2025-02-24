@@ -8,8 +8,11 @@ PlexDNS Panel is a powerful and flexible tool for managing **DNS zones** across 
 
 ## Features
 ✅ **Multi-provider support** – Manage DNS records across different DNS providers.
+
 ✅ **API-based automation** – Configure and update DNS zones using provider APIs.
+
 ✅ **Support for popular DNS providers** – Works with multiple DNS services.
+
 ✅ **Fast and secure** – Uses API keys for authentication and ensures secure communication.
 
 ## Supported Providers & Requirements
