@@ -266,8 +266,8 @@ class ZonesController extends Controller
             }
 
             $crdate = $db->selectValue(
-                "SELECT created_at FROM zones WHERE id = ? LIMIT 1",
-                [$domain_id]
+                "SELECT created_at FROM zones WHERE domain_name = ? LIMIT 1",
+                [$domainName]
             );
             
             $this->container->get('flash')->addMessage('success', 'Zone ' . $domainName . ' has been created successfully on ' . $crdate);
@@ -497,8 +497,8 @@ class ZonesController extends Controller
 
             $zone_id = $db->selectValue('SELECT id FROM zones WHERE domain_name = ? LIMIT 1',[$domainName]);
             $record_id = $db->selectValue(
-                'SELECT id FROM records WHERE domain_id = ? AND type = ? AND host = ? AND value = ? LIMIT 1',
-                [$zone_id, $record_type, $record_name, $record_value]
+                'SELECT id FROM records WHERE domain_id = ? AND type = ? AND host = ? LIMIT 1',
+                [$zone_id, $record_type, $record_name]
             );
 
             try {
