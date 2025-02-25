@@ -25,31 +25,38 @@
           <div class="container-xl">
             <div class="col-12">
             {% include 'partials/flash.twig' %}
-                <div class="card">
-                    <div class="card-body">
-                        <form id="domainCreateForm" action="/zone/create" method="post">
-                        {{ csrf.field | raw }}
-                        
-                        <div class="row">
-                          <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="domainName" class="form-label required">{{ __('Your Zone') }}</label>
-                                <input type="text" class="form-control mb-2" placeholder="example.com" name="domainName" id="domainName" required="required" autocapitalize="none">
-                            </div>
-                         
-
-                          </div>
-                        </div>
-
+              <div class="card">
+                <div class="card-body">
+                <form id="domainCreateForm" action="/zone/create" method="post">
+                {{ csrf.field | raw }}
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="domainName" class="form-label required">{{ __('Your Zone') }}</label>
+                        <input type="text" class="form-control mb-2" placeholder="example.com" name="domainName" id="domainName" required="required" autocapitalize="none">
+                      </div>
                     </div>
+                    {% if users and not user %}
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="registrarDropdown" class="form-label">{{ __('Assign to User') }}</label>
+                        <select id="registrarDropdown" name="registrar" class="form-select">
+                          {% for user in users %}
+                          <option value="{{ user.id }}">{{ user.username }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
                 <div class="card-footer">
                   <div class="row align-items-center">
                     <div class="col-auto">
                       <button type="submit" class="btn btn-primary">{{ __('Create Zone') }}</button>
                     </div>
                   </div>
-                </div>
-                </form>
+                </div></form>
               </div>
             </div>
           </div>

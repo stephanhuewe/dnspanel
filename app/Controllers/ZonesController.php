@@ -178,14 +178,6 @@ class ZonesController extends Controller
                 }
             }
 
-/*             $registrar_id = $data['registrar'] ?? null;
-            $registrars = $db->select("SELECT id, clid, name FROM registrar");
-            if ($_SESSION["auth_roles"] != 0) {
-                $registrar = true;
-            } else {
-                $registrar = null;
-            } */
-
             $invalid_domain = validate_label($domainName, $db);
 
             if ($invalid_domain) {
@@ -202,15 +194,7 @@ class ZonesController extends Controller
                 $this->container->get('flash')->addMessage('error', 'Error creating zone: Zone name already exists');
                 return $response->withHeader('Location', '/zone/create')->withStatus(302);
             }
-
-/*             $result = $db->selectRow('SELECT registrar_id FROM registrar_users WHERE user_id = ?', [$_SESSION['auth_user_id']]);
-
-            if ($_SESSION["auth_roles"] != 0) {
-                $clid = $result['registrar_id'];
-            } else {
-                $clid = $registrar_id;
-            } */
-            
+      
             try {
                 $apiKey = envi('API_KEY') ?? null;
                 $provider = envi('PROVIDER') ?? null;
@@ -276,16 +260,12 @@ class ZonesController extends Controller
 
         $db = $this->container->get('db');
         $users = $db->select("SELECT id, email, username FROM users");
-        if ($_SESSION["auth_roles"] != 0) {
-            $registrar = true;
-        } else {
-            $registrar = null;
-        }
+        $user = $_SESSION["auth_roles"] != 0 ? true : null;
 
         // Default view for GET requests or if POST data is not set
         return view($response,'admin/zones/createZone.twig', [
             'users' => $users,
-            'registrar' => $registrar,
+            'user' => $user,
         ]);
     }
     
