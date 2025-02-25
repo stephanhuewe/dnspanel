@@ -1062,3 +1062,61 @@ function generateIanaIdnTable(string $regex, array $metadata): string {
 function isValidIP($ip) {
     return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6);
 }
+
+function getProviderCredentials(string $provider): ?array {
+    // Convert provider name to uppercase (matches env variables)
+    $providerKey = strtoupper(str_replace(' ', '_', $provider));
+
+    // Get all environment variables
+    $envVars = $_ENV;
+
+    // Find all keys related to this provider (keys start with "DNS_{PROVIDER}_")
+    $credentials = [];
+    foreach ($envVars as $key => $value) {
+        if (strpos($key, "DNS_{$providerKey}_") === 0 && !empty($value)) {
+            // Extract the field name after "DNS_{PROVIDER}_"
+            $field = str_replace("DNS_{$providerKey}_", '', $key);
+            $credentials[$field] = $value;
+        }
+    }
+
+    // Return credentials only if they have values, otherwise return null
+    return !empty($credentials) ? $credentials : null;
+}
+
+function getActiveProviders(): array {
+    $activeProviders = [];
+    
+    foreach ($_ENV as $key => $value) {
+        if (strpos($key, 'DNS_') === 0 && !empty($value)) {
+            // Extract provider name (between "DNS_" and "_FIELDNAME")
+            preg_match('/DNS_([^_]+)_/', $key, $matches);
+            if (!empty($matches[1])) {
+                $providerName = $matches[1];
+                
+                // Add provider only if it hasn't been added already
+                if (!isset($activeProviders[$providerName])) {
+                    $activeProviders[$providerName] = str_replace('_', ' ', ucfirst(strtolower($providerName)));
+                }
+            }
+        }
+    }
+
+    return $activeProviders;
+}
+
+function getProviderDisplayName(string $provider): string {
+    $providerNames = [
+        'ANYCASTDNS'  => 'AnycastDNS',
+        'BIND9'       => 'Bind',
+        'CLOUDFLARE'  => 'Cloudflare',
+        'CLOUDNS'     => 'ClouDNS',
+        'DESEC'       => 'Desec',
+        'DNSIMPLE'    => 'DNSimple',
+        'HETZNER'     => 'Hetzner',
+        'POWERDNS'    => 'PowerDNS',
+        'VULTR'       => 'Vultr',
+    ];
+
+    return $providerNames[strtoupper($provider)] ?? ucfirst(strtolower($provider));
+}

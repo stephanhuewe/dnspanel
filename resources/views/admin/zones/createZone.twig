@@ -36,6 +36,19 @@
                         <input type="text" class="form-control mb-2" placeholder="example.com" name="domainName" id="domainName" required="required" autocapitalize="none">
                       </div>
                     </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="providerDropdown" class="form-label required">{{ __('Choose Provider') }}</label>
+                        <select id="providerDropdown" name="provider" class="form-select" required>
+                          <option value="" disabled selected>Select a Provider</option>
+                          {% for key, name in providers %}
+                          <option value="{{ key }}">{{ name }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
                     {% if users and not user %}
                     <div class="col-md-6">
                       <div class="mb-3">

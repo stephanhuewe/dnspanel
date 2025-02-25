@@ -194,31 +194,37 @@ class ZonesController extends Controller
                 $this->container->get('flash')->addMessage('error', 'Error creating zone: Zone name already exists');
                 return $response->withHeader('Location', '/zone/create')->withStatus(302);
             }
-      
+
             try {
-                $apiKey = envi('API_KEY') ?? null;
-                $provider = envi('PROVIDER') ?? null;
+                $provider = $data['provider'] ?? null;
+                $providerDisplay = getProviderDisplayName($provider);
 
-                $bindip = envi('BIND_IP') ?? '127.0.0.1';
-                $powerdnsip = envi('POWERDNS_IP') ?? '127.0.0.1';
-
-                $cloudnsAuthId = envi('AUTH_ID') ?? null;
-                $cloudnsAuthPassword = envi('AUTH_PASSWORD') ?? null;
-
-                if (!$apiKey || !$provider) {
-                    $this->container->get('flash')->addMessage('error', 'Error: Missing required environment variables in .env file (API_KEY or PROVIDER)');
+                if (!$provider) {
+                    $this->container->get('flash')->addMessage('error', 'Error: Missing required environment variables in .env file (PROVIDER)');
                     return $response->withHeader('Location', '/zone/create')->withStatus(302);
                 }
 
-                if ($provider === 'ClouDNS' && (!$cloudnsAuthId || !$cloudnsAuthPassword)) {
-                    $this->container->get('flash')->addMessage('error', 'Error: Missing ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
+                $credentials = getProviderCredentials($provider);
+
+                if (empty($credentials)) {
+                    $this->container->get('flash')->addMessage('error', "Error: Missing required credentials for provider ($providerDisplay) in .env file.");
                     return $response->withHeader('Location', '/zone/create')->withStatus(302);
                 }
 
-                $service = new Service($pdo);
+                $apiKey = $credentials['API_KEY'] ?? null;
+                $bindip = $credentials['BIND_IP'] ?? '127.0.0.1';
+                $powerdnsip = $credentials['POWERDNS_IP'] ?? '127.0.0.1';
+                $cloudnsAuthId = $credentials['AUTH_ID'] ?? null;
+                $cloudnsAuthPassword = $credentials['AUTH_PASSWORD'] ?? null;
+
+                if ($providerDisplay === 'ClouDNS' && (empty($cloudnsAuthId) || empty($cloudnsAuthPassword))) {
+                    $this->container->get('flash')->addMessage('error', 'Error: Invalid ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
+                    return $response->withHeader('Location', '/zone/create')->withStatus(302);
+                }
+
                 $config = [
                     'domain_name' => $domainName,
-                    'provider' => $provider,
+                    'provider' => $providerDisplay,
                     'apikey' => $apiKey,
                 ];
                 if ($bindip !== '127.0.0.1' && isValidIP($bindip)) {
@@ -227,18 +233,12 @@ class ZonesController extends Controller
                 if ($powerdnsip !== '127.0.0.1' && isValidIP($powerdnsip)) {
                     $config['powerdnsip'] = $powerdnsip;
                 }
-                if ($provider === 'ClouDNS') {
-                    if (!empty($cloudnsAuthId) && $cloudnsAuthId !== 'your-cloudns-auth-id' &&
-                        !empty($cloudnsAuthPassword) && $cloudnsAuthPassword !== 'your-cloudns-password') {
-                        
-                        $config['cloudns_auth_id'] = $cloudnsAuthId;
-                        $config['cloudns_auth_password'] = $cloudnsAuthPassword;
-                    } else {
-                        $this->container->get('flash')->addMessage('error', 'Error: Invalid ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
-                        return $response->withHeader('Location', '/zone/create')->withStatus(302);
-                    }
+                if ($providerDisplay === 'ClouDNS') {
+                    $config['cloudns_auth_id'] = $cloudnsAuthId;
+                    $config['cloudns_auth_password'] = $cloudnsAuthPassword;
                 }
 
+                $service = new Service($pdo);
                 $domainOrder = [
                     'client_id' => $_SESSION['auth_user_id'],
                     'config' => json_encode($config),
@@ -266,6 +266,7 @@ class ZonesController extends Controller
         return view($response,'admin/zones/createZone.twig', [
             'users' => $users,
             'user' => $user,
+            'providers' => getActiveProviders()
         ]);
     }
     
@@ -392,22 +393,31 @@ class ZonesController extends Controller
             $record_priority = $data['record_priority'] ?? null;
 
             try {
-                $apiKey = envi('API_KEY') ?? null;
-                $provider = envi('PROVIDER') ?? null;
+                $configJson = $db->selectValue('SELECT config FROM zones WHERE domain_name = ?', [$domainName]);
+                $configArray = json_decode($configJson, true);
+                $provider = strtoupper($configArray['provider']) ?? null;
+                $providerDisplay = getProviderDisplayName($provider);
 
-                $bindip = envi('BIND_IP') ?? '127.0.0.1';
-                $powerdnsip = envi('POWERDNS_IP') ?? '127.0.0.1';
-
-                $cloudnsAuthId = envi('AUTH_ID') ?? null;
-                $cloudnsAuthPassword = envi('AUTH_PASSWORD') ?? null;
-
-                if (!$apiKey || !$provider) {
-                    $this->container->get('flash')->addMessage('error', 'Error: Missing required environment variables in .env file (API_KEY or PROVIDER)');
+                if (!$provider) {
+                    $this->container->get('flash')->addMessage('error', 'Error: Missing required environment variables in .env file (PROVIDER)');
                     return $response->withHeader('Location', '/zone/create')->withStatus(302);
                 }
 
-                if ($provider === 'ClouDNS' && (!$cloudnsAuthId || !$cloudnsAuthPassword)) {
-                    $this->container->get('flash')->addMessage('error', 'Error: Missing ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
+                $credentials = getProviderCredentials($provider);
+
+                if (empty($credentials)) {
+                    $this->container->get('flash')->addMessage('error', "Error: Missing required credentials for provider ($providerDisplay) in .env file.");
+                    return $response->withHeader('Location', '/zone/create')->withStatus(302);
+                }
+
+                $apiKey = $credentials['API_KEY'] ?? null;
+                $bindip = $credentials['BIND_IP'] ?? '127.0.0.1';
+                $powerdnsip = $credentials['POWERDNS_IP'] ?? '127.0.0.1';
+                $cloudnsAuthId = $credentials['AUTH_ID'] ?? null;
+                $cloudnsAuthPassword = $credentials['AUTH_PASSWORD'] ?? null;
+
+                if ($providerDisplay === 'ClouDNS' && (empty($cloudnsAuthId) || empty($cloudnsAuthPassword))) {
+                    $this->container->get('flash')->addMessage('error', 'Error: Invalid ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
                     return $response->withHeader('Location', '/zone/create')->withStatus(302);
                 }
 
@@ -419,7 +429,7 @@ class ZonesController extends Controller
                     'record_value' => $record_value,
                     'record_ttl' => $record_ttl,
                     'record_priority' => $record_priority,
-                    'provider' => $provider,
+                    'provider' => $providerDisplay,
                     'apikey' => $apiKey
                 ];
                 if ($bindip !== '127.0.0.1' && isValidIP($bindip)) {
@@ -428,16 +438,9 @@ class ZonesController extends Controller
                 if ($powerdnsip !== '127.0.0.1' && isValidIP($powerdnsip)) {
                     $recordData['powerdnsip'] = $powerdnsip;
                 }
-                if ($provider === 'ClouDNS') {
-                    if (!empty($cloudnsAuthId) && $cloudnsAuthId !== 'your-cloudns-auth-id' &&
-                        !empty($cloudnsAuthPassword) && $cloudnsAuthPassword !== 'your-cloudns-password') {
-                        
-                        $recordData['cloudns_auth_id'] = $cloudnsAuthId;
-                        $recordData['cloudns_auth_password'] = $cloudnsAuthPassword;
-                    } else {
-                        $this->container->get('flash')->addMessage('error', 'Error: Invalid ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
-                        return $response->withHeader('Location', '/zone/update/'.$domainName)->withStatus(302);
-                    }
+                if ($providerDisplay === 'ClouDNS') {
+                    $recordData['cloudns_auth_id'] = $cloudnsAuthId;
+                    $recordData['cloudns_auth_password'] = $cloudnsAuthPassword;
                 }
                 $recordId = $service->addRecord($recordData);
             } catch (Throwable $e) {  // Catch generic exceptions
@@ -482,23 +485,32 @@ class ZonesController extends Controller
             );
 
             try {
-                $apiKey = envi('API_KEY') ?? null;
-                $provider = envi('PROVIDER') ?? null;
+                $configJson = $db->selectValue('SELECT config FROM zones WHERE domain_name = ?', [$domainName]);
+                $configArray = json_decode($configJson, true);
+                $provider = strtoupper($configArray['provider']) ?? null;
+                $providerDisplay = getProviderDisplayName($provider);
 
-                $bindip = envi('BIND_IP') ?? '127.0.0.1';
-                $powerdnsip = envi('POWERDNS_IP') ?? '127.0.0.1';
-
-                $cloudnsAuthId = envi('AUTH_ID') ?? null;
-                $cloudnsAuthPassword = envi('AUTH_PASSWORD') ?? null;
-
-                if (!$apiKey || !$provider) {
-                    $this->container->get('flash')->addMessage('error', 'Error: Missing required environment variables in .env file (API_KEY or PROVIDER)');
-                    return $response->withHeader('Location', '/zone/create')->withStatus(302);
+                if (!$provider) {
+                    $this->container->get('flash')->addMessage('error', 'Error: Missing required environment variables in .env file (PROVIDER)');
+                    return $response->withHeader('Location', '/zone/update/'.$domainName)->withStatus(302);
                 }
 
-                if ($provider === 'ClouDNS' && (!$cloudnsAuthId || !$cloudnsAuthPassword)) {
-                    $this->container->get('flash')->addMessage('error', 'Error: Missing ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
-                    return $response->withHeader('Location', '/zone/create')->withStatus(302);
+                $credentials = getProviderCredentials($provider);
+
+                if (empty($credentials)) {
+                    $this->container->get('flash')->addMessage('error', "Error: Missing required credentials for provider ($providerDisplay) in .env file.");
+                    return $response->withHeader('Location', '/zone/update/'.$domainName)->withStatus(302);
+                }
+
+                $apiKey = $credentials['API_KEY'] ?? null;
+                $bindip = $credentials['BIND_IP'] ?? '127.0.0.1';
+                $powerdnsip = $credentials['POWERDNS_IP'] ?? '127.0.0.1';
+                $cloudnsAuthId = $credentials['AUTH_ID'] ?? null;
+                $cloudnsAuthPassword = $credentials['AUTH_PASSWORD'] ?? null;
+
+                if ($providerDisplay === 'ClouDNS' && (empty($cloudnsAuthId) || empty($cloudnsAuthPassword))) {
+                    $this->container->get('flash')->addMessage('error', 'Error: Invalid ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
+                    return $response->withHeader('Location', '/zone/update/'.$domainName)->withStatus(302);
                 }
 
                 $service = new Service($pdo);
@@ -509,7 +521,7 @@ class ZonesController extends Controller
                         'record_name' => $record_name,
                         'record_type' => $record_type,
                         'record_value' => $record_value,
-                        'provider' => $provider,
+                        'provider' => $providerDisplay,
                         'apikey' => $apiKey
                     ];
                     if ($bindip !== '127.0.0.1' && isValidIP($bindip)) {
@@ -518,16 +530,9 @@ class ZonesController extends Controller
                     if ($powerdnsip !== '127.0.0.1' && isValidIP($powerdnsip)) {
                         $deleteData['powerdnsip'] = $powerdnsip;
                     }
-                    if ($provider === 'ClouDNS') {
-                        if (!empty($cloudnsAuthId) && $cloudnsAuthId !== 'your-cloudns-auth-id' &&
-                            !empty($cloudnsAuthPassword) && $cloudnsAuthPassword !== 'your-cloudns-password') {
-                            
-                            $deleteData['cloudns_auth_id'] = $cloudnsAuthId;
-                            $deleteData['cloudns_auth_password'] = $cloudnsAuthPassword;
-                        } else {
-                            $this->container->get('flash')->addMessage('error', 'Error: Invalid ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
-                            return $response->withHeader('Location', '/zone/update/'.$domainName)->withStatus(302);
-                        }
+                    if ($providerDisplay === 'ClouDNS') {
+                        $deleteData['cloudns_auth_id'] = $cloudnsAuthId;
+                        $deleteData['cloudns_auth_password'] = $cloudnsAuthPassword;
                     }
                     $service->delRecord($deleteData);
                 } else {
@@ -539,7 +544,7 @@ class ZonesController extends Controller
                         'record_value' => $record_value,
                         'record_ttl' => $record_ttl,
                         'record_priority' => $record_priority,
-                        'provider' => $provider,
+                        'provider' => $providerDisplay,
                         'apikey' => $apiKey
                     ];
                     if ($bindip !== '127.0.0.1' && isValidIP($bindip)) {
@@ -548,16 +553,9 @@ class ZonesController extends Controller
                     if ($powerdnsip !== '127.0.0.1' && isValidIP($powerdnsip)) {
                         $updateData['powerdnsip'] = $powerdnsip;
                     }
-                    if ($provider === 'ClouDNS') {
-                        if (!empty($cloudnsAuthId) && $cloudnsAuthId !== 'your-cloudns-auth-id' &&
-                            !empty($cloudnsAuthPassword) && $cloudnsAuthPassword !== 'your-cloudns-password') {
-                            
-                            $updateData['cloudns_auth_id'] = $cloudnsAuthId;
-                            $updateData['cloudns_auth_password'] = $cloudnsAuthPassword;
-                        } else {
-                            $this->container->get('flash')->addMessage('error', 'Error: Invalid ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
-                            return $response->withHeader('Location', '/zone/update/'.$domainName)->withStatus(302);
-                        }
+                    if ($providerDisplay === 'ClouDNS') {
+                        $updateData['cloudns_auth_id'] = $cloudnsAuthId;
+                        $updateData['cloudns_auth_password'] = $cloudnsAuthPassword;
                     }
                     $service->updateRecord($updateData);
                 }
@@ -596,29 +594,37 @@ class ZonesController extends Controller
                     return $response->withHeader('Location', '/zones')->withStatus(302);
                 }
 
-                $apiKey = envi('API_KEY') ?? null;
-                $provider = envi('PROVIDER') ?? null;
+                $configJson = $db->selectValue('SELECT config FROM zones WHERE domain_name = ?', [$args]);
+                $configArray = json_decode($configJson, true);
+                $provider = strtoupper($configArray['provider']) ?? null;
+                $providerDisplay = getProviderDisplayName($provider);
 
-                $bindip = envi('BIND_IP') ?? '127.0.0.1';
-                $powerdnsip = envi('POWERDNS_IP') ?? '127.0.0.1';
-
-                $cloudnsAuthId = envi('AUTH_ID') ?? null;
-                $cloudnsAuthPassword = envi('AUTH_PASSWORD') ?? null;
-
-                if (!$apiKey || !$provider) {
-                    $this->container->get('flash')->addMessage('error', 'Error: Missing required environment variables in .env file (API_KEY or PROVIDER)');
-                    return $response->withHeader('Location', '/zone/create')->withStatus(302);
+                if (!$provider) {
+                    $this->container->get('flash')->addMessage('error', 'Error: Missing required environment variables in .env file (PROVIDER)');
+                    return $response->withHeader('Location', '/zones')->withStatus(302);
                 }
 
-                if ($provider === 'ClouDNS' && (!$cloudnsAuthId || !$cloudnsAuthPassword)) {
-                    $this->container->get('flash')->addMessage('error', 'Error: Missing ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
-                    return $response->withHeader('Location', '/zone/create')->withStatus(302);
+                $credentials = getProviderCredentials($provider);
+
+                if (empty($credentials)) {
+                    $this->container->get('flash')->addMessage('error', "Error: Missing required credentials for provider ($providerDisplay) in .env file.");
+                    return $response->withHeader('Location', '/zones')->withStatus(302);
                 }
 
-                $service = new Service($pdo);
+                $apiKey = $credentials['API_KEY'] ?? null;
+                $bindip = $credentials['BIND_IP'] ?? '127.0.0.1';
+                $powerdnsip = $credentials['POWERDNS_IP'] ?? '127.0.0.1';
+                $cloudnsAuthId = $credentials['AUTH_ID'] ?? null;
+                $cloudnsAuthPassword = $credentials['AUTH_PASSWORD'] ?? null;
+
+                if ($providerDisplay === 'ClouDNS' && (empty($cloudnsAuthId) || empty($cloudnsAuthPassword))) {
+                    $this->container->get('flash')->addMessage('error', 'Error: Invalid ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
+                    return $response->withHeader('Location', '/zones')->withStatus(302);
+                }
+
                 $config = [
                     'domain_name' => $args,
-                    'provider' => $provider,
+                    'provider' => $providerDisplay,
                     'apikey' => $apiKey,
                 ];
                 if ($bindip !== '127.0.0.1' && isValidIP($bindip)) {
@@ -627,24 +633,18 @@ class ZonesController extends Controller
                 if ($powerdnsip !== '127.0.0.1' && isValidIP($powerdnsip)) {
                     $config['powerdnsip'] = $powerdnsip;
                 }
-                if ($provider === 'ClouDNS') {
-                    if (!empty($cloudnsAuthId) && $cloudnsAuthId !== 'your-cloudns-auth-id' &&
-                        !empty($cloudnsAuthPassword) && $cloudnsAuthPassword !== 'your-cloudns-password') {
-                        
-                        $config['cloudns_auth_id'] = $cloudnsAuthId;
-                        $config['cloudns_auth_password'] = $cloudnsAuthPassword;
-                    } else {
-                        $this->container->get('flash')->addMessage('error', 'Error: Invalid ClouDNS credentials (AUTH_ID and AUTH_PASSWORD) in .env');
-                        return $response->withHeader('Location', '/zones')->withStatus(302);
-                    }
+                if ($providerDisplay === 'ClouDNS') {
+                    $config['cloudns_auth_id'] = $cloudnsAuthId;
+                    $config['cloudns_auth_password'] = $cloudnsAuthPassword;
                 }
 
+                $service = new Service($pdo);
                 $domainOrder = [
                     'config' => json_encode($config),
                 ];
                 $service->deleteDomain($domainOrder);
 
-                $this->container->get('flash')->addMessage('success', 'Zone ' . $domainName . ' deleted successfully');
+                $this->container->get('flash')->addMessage('success', 'Zone ' . $args . ' deleted successfully');
                 return $response->withHeader('Location', '/zones')->withStatus(302);
             } else {
                 // Redirect to the domains view
