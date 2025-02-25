@@ -22,6 +22,7 @@ PlexDNS Panel supports the following **DNS providers**, each requiring specific 
 |------------|---------------------|
 | **AnycastDNS** | `API_KEY` |
 | **Bind9** | `API_KEY`, `BIND_IP` |
+| **Cloudflare** | `EMAIL:API_KEY` |
 | **ClouDNS** | `AUTH_ID`, `AUTH_PASSWORD` |
 | **Desec** | `API_KEY` |
 | **DNSimple** | `API_KEY` |
