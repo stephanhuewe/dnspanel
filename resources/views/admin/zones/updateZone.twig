@@ -104,13 +104,12 @@
                             </thead>
                             <tbody id="recordsTableBody">
                                 {% for record in records %}
-                                <form id="record-form-{{ record.recordId }}" class="mb-4 api-form" method="post" action="/zone/updaterecord">
-                                {{ csrf.field | raw }}
-                                    <input type="hidden" name="record_id" value="{{ record.recordId }}"/>
-                                    <input type="hidden" name="record_type" value="{{ record.type }}"/>
-                                    <input type="hidden" name="record_name" value="{{ record.host }}"/>
-                                    <input type="hidden" name="order_id" value="{{ order.id }}">
                                     <tr>
+                                    <form id="record-form-{{ record.recordId }}" class="mb-4 api-form" method="post" action="/zone/updaterecord">
+                                    {{ csrf.field | raw }}
+                                        <input type="hidden" name="record_id" value="{{ record.recordId }}"/>
+                                        <input type="hidden" name="record_type" value="{{ record.type }}"/>
+                                        <input type="hidden" name="record_name" value="{{ record.host }}"/>
                                         <td>
                                             {% set dns_type = record.type|upper %}
                                             <span class="badge 
@@ -142,13 +141,13 @@
                                                     </svg>
                                             </button>
                                         </td>
+                                    </form>
                                     </tr>
                                 {% else %}
                                     <tr>
                                         <td colspan="6">No DNS records found.</td>
                                     </tr>
                                 {% endfor %}
-                                </form>
                             </tbody>
                         </table>
                     </div>
