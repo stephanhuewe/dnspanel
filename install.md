@@ -195,8 +195,8 @@ Next, prepare the directories for logs and cache:
 
 ```bash
 mkdir -p /var/log/dns
-chown -R www-data:www-data /var/log/dns
-chown -R www-data:www-data /var/www/dns/cache/
+chown -R caddy:caddy /var/log/dns
+chown -R caddy:caddy: /var/www/dns/cache/
 ```
 
 ## 6. Import Database:
