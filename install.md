@@ -88,6 +88,10 @@ dns.example.com {
     }
 }
 ```
+Create Log-Directory and set permissions
+mkdir /var/log/dns
+chown caddy:caddy /var/log/dns
+
 
 Activate and reload Caddy:
 
